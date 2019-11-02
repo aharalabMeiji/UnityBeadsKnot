@@ -81,6 +81,9 @@ public class MouseControll : MonoBehaviour {
             DraggedNode.Position = TmpPos;
             // Knot.UpdateBeadsを呼び出す。
             ThisKnot.GetComponent<Knot>().UpdateBeads();
+            // エッジを作り直す。
+            // ドラッグしているノードについて、回転して適正な位置にする。
+
         }
     }
 
