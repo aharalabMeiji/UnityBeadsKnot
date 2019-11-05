@@ -11,6 +11,8 @@ public class Bead : MonoBehaviour {
     public int NumOfNbhd; // Nbhdの数
 
     public bool Joint, MidJoint, NearJoint, BandJoint;
+    public bool Active = true;
+
     // Use this for initialization
     private void Start()
     {
@@ -32,6 +34,10 @@ public class Bead : MonoBehaviour {
         {
             SR.color = Color.red;
         }
+        if (!Active)
+        {// ５６
+            gameObject.SetActive(false);
+        }
     }
 
     public int GetRID(Bead bd)
@@ -41,6 +47,10 @@ public class Bead : MonoBehaviour {
         if (N2 == bd) return 2;
         if (U2 == bd) return 3;
         return -1;
+    }
+    public void SetActive(bool active)
+    {
+        Active = active;
     }
     public void SetPosition(Vector3 vec)
     {

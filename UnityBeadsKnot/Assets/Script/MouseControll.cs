@@ -23,9 +23,11 @@ public class MouseControll : MonoBehaviour {
 
 
     public  GameObject ThisKnot;
+    Knot thisKnot;
 
     Vector3 MouseDownVec;
     Node DraggedNode = null;
+    Vector3 DraggedNodeStartPosition;
 
     public static bool ModifyNode = true;
     public static bool ModifyBeads = false;
@@ -55,8 +57,8 @@ public class MouseControll : MonoBehaviour {
     {
         MouseDownVec = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         MouseDownVec.z = 0f;
-        Debug.Log(MouseDownVec);
-        Knot thisKnot = ThisKnot.GetComponent<Knot>();
+        //Debug.Log(MouseDownVec);
+        thisKnot = ThisKnot.GetComponent<Knot>();
         thisKnot.GetAllThings();
         
         for(int n=0; n<thisKnot.AllNodes.Length; n++)
@@ -64,6 +66,7 @@ public class MouseControll : MonoBehaviour {
             float dist = (MouseDownVec - thisKnot.AllNodes[n].Position).magnitude;
             if(dist < 0.25){
                 DraggedNode = thisKnot.AllNodes[n];
+                DraggedNodeStartPosition = thisKnot.AllNodes[n].Position;
                 return;
             }
         }
@@ -73,17 +76,30 @@ public class MouseControll : MonoBehaviour {
     {
         if(DraggedNode != null)
         {
-            Vector3 TmpPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            TmpPos.z = 0f;
+            Vector3 tmpPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            tmpPos.z = 0f;
+            float minDist = (tmpPos - DraggedNodeStartPosition).magnitude;
+            int minNodeId = DraggedNode.ID;
+            for (int n = 0; n < thisKnot.AllNodes.Length; n++)
+            {
+                Node nd = thisKnot.AllNodes[n];
+                if (nd.ID != DraggedNode.ID)
+                {
+                    float dist = (tmpPos - nd.Position).magnitude;
+                    if (dist < minDist)
+                    {
+                        return;
+                    }
+                }
+            }
             // ドラッグされたBeadの座標を変える。
-            DraggedNode.ThisBead.Position = TmpPos;
+            DraggedNode.ThisBead.Position = tmpPos;
             // Nodeの座標も同期する
-            DraggedNode.Position = TmpPos;
-            // Knot.UpdateBeadsを呼び出す。
-            ThisKnot.GetComponent<Knot>().UpdateBeads();
-            // エッジを作り直す。
+            DraggedNode.Position = tmpPos;
+            //Debug.Log("mousePosition"+tmpPos);
+            // エッジを作り直す。// Knot.UpdateBeadsを呼び出す。
+            ThisKnot.GetComponent<Knot>().UpdateBeadsAtNode(DraggedNode);
             // ドラッグしているノードについて、回転して適正な位置にする。
-
         }
     }
 

@@ -182,7 +182,7 @@ public class Knot : MonoBehaviour
             }
             else if (bd.NumOfNbhd == 0)
             {
-                Debug.Log("Num " + n + "is not in use.");
+                Debug.Log("Num " + n + " is not in use.");
                 GetNodeByID(n).inUse = false ;
                 bd.gameObject.SetActive(false);
 
@@ -284,16 +284,16 @@ public class Knot : MonoBehaviour
         Bead prev =  a.ThisBead;
         Bead now = prev.GetNU12(ar);
         Bead next = null;
-
         for(int repeat=0; repeat<AllBeads.Length; repeat++)// リピートしすぎない工夫。
         {
-            if (now.GetNU12(0) == prev) next = now.GetNU12(2);
-            else if (now.GetNU12(2) == prev) next = now.GetNU12(0);
+            if (now.GetNU12(0).ID == prev.ID) next = now.GetNU12(2);
+            else if (now.GetNU12(2).ID == prev.ID) next = now.GetNU12(0);
             else Debug.Log("error in GetBeadsNumberOnEdge");
             result++;
-            if (next == b.ThisBead)
+            //Debug.Log("" + next.ID + " " + b.ThisBead.ID);
+            if (next.ID == b.ThisBead.ID)
             {
-                break;
+                return result;
             }
             else
             {
@@ -374,128 +374,143 @@ public class Knot : MonoBehaviour
     /// </summary>
     public void UpdateBeads()
     {
-        float beadsInterval = 0.2f;
         //AllNodes = FindObjectsOfType<Node>();
         //AllEdges = FindObjectsOfType<Edge>();
         //AllBeads = FindObjectsOfType<Bead>();
         for (int e = 0; e < AllEdges.Length; e++)
         {
             Edge ed = AllEdges[e];
-            Node ANode = ed.ANode;// うまくいかないようだったらed.ANodeIDから計算する
-            Node BNode = ed.BNode;// うまくいかないようだったらed.ANodeIDから計算する
-            if (ANode == null || BNode == null)
-            {
-                ANode = ed.ANode = GetNodeByID(ed.ANodeID);
-                BNode = ed.BNode = GetNodeByID(ed.BNodeID);
-            }
-//            if (!ANode.inUse || !BNode.inUse) return;
-            Bead ABead = ANode.ThisBead;
-            Bead BBead = BNode.ThisBead;            
-            //// 理想とするエッジの弧長の概数を計算する。（メソッドにする）
-            float arclength = GetRealArclength(ANode,ed.ANodeRID,BNode,ed.BNodeRID);
-            //// 理想とするビーズの内個数を計算する。
-            int beadsNumber = Mathf.FloorToInt(arclength / beadsInterval) - 2;
-            //// 必要な内個数が少ない場合を想定して、最小数を決めておく。（多分3くらいがベスト）
-            if (beadsNumber < 3) beadsNumber = 3;
-            //// edgeの上にある現在のビーズの内個数を数える。（メソッドにする）
-            int beadsCount = GetBeadsNumberOnEdge(ANode, ed.ANodeRID, BNode, ed.BNodeRID);
-            //print("必要数,現状数:"+beadsNumber+","+ beadsCount);
-            if (beadsNumber > beadsCount)
-            {// 必要数のほうが多い→ビーズの追加が必要
-                int NewBeadID = AllBeads.Length;
-                Bead bead1 = ABead;
-                int bead1RID = ed.ANodeRID;
-                Bead bead2 = ABead.GetNU12(ed.ANodeRID);// ANodeRIDに応じたビーズの番号;
-                int bead2RID = bead2.GetRID(bead1);
-                AllBeads = FindObjectsOfType<Bead>();
-                for (int repeat = 0; repeat < beadsNumber - beadsCount; repeat++)
-                {
-                    Bead newBead = AddBead((bead1.Position+bead2.Position)*0.5f);// 
-                    newBead.SetNU12(0, bead1);
-                    newBead.SetNU12(2, bead2);
-                    newBead.NumOfNbhd = 2;
-                    newBead.ID = NewBeadID;
-                    NewBeadID++;
-                    bead1.SetNU12(bead1RID, newBead);
-                    bead2.SetNU12(bead2RID, newBead);
-                    bead2 = newBead;
-                }
-            }
-            else if (beadsNumber < beadsCount)
-            {//現在数のほうが多い→ビーズの削除が必要
-            //    bead1 = NodeA.pointID;
-            //    Bead bd1 = de.getBead(bead1);
-            //    for (int repeat = 0; repeat < beads_count - beads_number; repeat++)
-            //    {
-            //        bead2 = bd1.get_un12(ed.ANodeRID);
-            //        Bead bd2 = de.getBead(bead2);
-            //        // ここでbd2がJointだったらどうしよう・・・・論理的にはありえないのだが。
-            //        if (bd2.n1 == bead1)
-            //            bead3 = bd2.n2;
-            //        else
-            //        {
-            //            bead3 = bd2.n1;
-            //        }
-            //        bd1.set_un12(ed.ANodeRID, bead3);
-            //        Bead bd3 = de.getBead(bead3);
-            //        if (bd3.n1 == bead2)
-            //        {
-            //            bd3.n1 = bead1;
-            //        }
-            //        else
-            //        {
-            //            bd3.n2 = bead1;
-            //        }
-            //        bd2.n1 = bd2.n2 = -1;// 使わないもののデータを消す。
-            //        de.removeBeadFromPoint(bead2);
-            //    }
-            }
-            ////今一度、エッジに乗っているビーズの座標を計算しなおす。
-            //Node ANode = nodes.get(ed.ANodeID);
-            //Node BNode = nodes.get(ed.BNodeID);
-            AllBeads = FindObjectsOfType<Bead>();
-            Vector3 v1 = ANode.Position;
-            Vector3 v2 = ANode.GetCoordEdgeEnd(ed.ANodeRID);
-            Vector3 v3 = BNode.GetCoordEdgeEnd(ed.BNodeRID);
-            Vector3 v4 = BNode.Position;
-            Bead prev = ABead;
-            Bead now = ABead.GetNU12(ed.ANodeRID);
-            float step = arclength * 0.98f / (beadsNumber + 1);
-            int bd = 0;
-            float arclen = 0f;
-            Vector3 pt0 = v1;
-            Vector3 pt1;
-            for (float repeat = 0.01f; repeat < 1.00f; repeat += 0.01f)
-            {
-                pt1 = GetBezier(v1, v2, v3, v4, repeat);
-                arclen += (pt1 - pt0).magnitude;
-                if (arclen >= step * (bd + 1))
-                {
-                    //print("update_points():" + arclen + "," + step);
-                    //now.SetPosition( pt1);//作ったばかりのときは、transform.positionが優先。
-                    now.transform.position = pt1;
-                    bd++;
-                    Bead next;
-                    if (now.GetNU12(0) == prev)
-                    {
-                        next = now.GetNU12(2);
-                    }
-                    else
-                    {
-                        next = now.GetNU12(0);
-                    }
-                    prev = now;
-                    now = next;
-                    if (now == BBead)
-                    {
-                        break;
-                    }
-                }
-                pt0 = pt1;
-            }
+            UpdateBeadsOnEdge(ed);
             
         }
         AllBeads = FindObjectsOfType<Bead>();
 
+    }
+
+    void UpdateBeadsOnEdge(Edge ed)
+    {
+        float beadsInterval = 0.2f;
+        Node ANode = ed.ANode;// うまくいかないようだったらed.ANodeIDから計算する
+        Node BNode = ed.BNode;// うまくいかないようだったらed.ANodeIDから計算する
+        if (ANode == null || BNode == null)
+        {
+            ANode = ed.ANode = GetNodeByID(ed.ANodeID);
+            BNode = ed.BNode = GetNodeByID(ed.BNodeID);
+        }
+        //            if (!ANode.inUse || !BNode.inUse) return;
+        Bead ABead = ANode.ThisBead;
+        Bead BBead = BNode.ThisBead;
+        //Debug.Log("EdgeData:"+ANode.Position+"-"+BNode.Position);
+        //// 理想とするエッジの弧長の概数を計算する。
+        float arclength = GetRealArclength(ANode, ed.ANodeRID, BNode, ed.BNodeRID);
+        //// 理想とするビーズの内個数を計算する。
+        int beadsNumber = Mathf.FloorToInt(arclength / beadsInterval) - 2;
+        //// 必要な内個数が少ない場合を想定して、最小数を決めておく。（多分3くらいがベスト）
+        if (beadsNumber < 3) beadsNumber = 3;
+        //// edgeの上にある現在のビーズの内個数を数える。
+        int beadsCount = GetBeadsNumberOnEdge(ANode, ed.ANodeRID, BNode, ed.BNodeRID);
+        //Debug.Log("必要数,現状数:"+beadsNumber+","+ beadsCount);
+        if (beadsNumber > beadsCount)
+        {// 必要数のほうが多い→ビーズの追加が必要
+            int NewBeadID = AllBeads.Length;
+            Bead bead1 = ABead;
+            int bead1RID = ed.ANodeRID;
+            Bead bead2 = ABead.GetNU12(ed.ANodeRID);// ANodeRIDに応じたビーズの番号;
+            int bead2RID = bead2.GetRID(bead1);
+            AllBeads = FindObjectsOfType<Bead>();
+            for (int repeat = 0; repeat < beadsNumber - beadsCount; repeat++)
+            {
+                Bead newBead = AddBead((bead1.Position + bead2.Position) * 0.5f);// 
+                newBead.SetNU12(0, bead1);
+                newBead.SetNU12(2, bead2);
+                newBead.NumOfNbhd = 2;
+                newBead.ID = NewBeadID;
+                NewBeadID++;
+                bead1.SetNU12(bead1RID, newBead);
+                bead2.SetNU12(bead2RID, newBead);
+                bead2 = newBead;
+            }
+        }
+        else if (beadsNumber < beadsCount)
+        {//現在数のほうが多い→ビーズの削除が必要
+            for (int repeat = 0; repeat < beadsCount - beadsNumber; repeat++)
+            {
+                Bead bd2 = ABead.GetNU12(ed.ANodeRID);
+                Bead bd3 = (bd2.GetNU12(0).ID == ABead.ID) ? bd2.GetNU12(2) : bd2.GetNU12(0);
+                //Debug.Log("delete beads" + ABead.ID + " " + bd2.ID + " " + bd3.ID);
+                // bd2 を無効にする
+                bd2.SetActive(false);
+                ABead.SetNU12(ed.ANodeRID, bd3);
+                if (bd3.GetNU12(0) == bd2)
+                    bd3.SetNU12(0, ABead);
+                else
+                    bd3.SetNU12(2, ABead);
+                //        bd2.n1 = bd2.n2 = -1;// 使わないもののデータを消す。
+                //        de.removeBeadFromPoint(bead2);
+            }
+        }
+        ////今一度、エッジに乗っているビーズの座標を計算しなおす。
+        //Node ANode = nodes.get(ed.ANodeID);
+        //Node BNode = nodes.get(ed.BNodeID);
+        AllBeads = FindObjectsOfType<Bead>();
+        Vector3 v1 = ANode.Position;
+        Vector3 v2 = ANode.GetCoordEdgeEnd(ed.ANodeRID);
+        Vector3 v3 = BNode.GetCoordEdgeEnd(ed.BNodeRID);
+        Vector3 v4 = BNode.Position;
+        Bead prev = ABead;
+        Bead now = ABead.GetNU12(ed.ANodeRID);
+        float step = arclength * 0.98f / (beadsNumber + 1);
+        int bd = 0;
+        float arclen = 0f;
+        Vector3 pt0 = v1;
+        Vector3 pt1;
+        for (float repeat = 0.01f; repeat < 1.00f; repeat += 0.01f)
+        {
+            pt1 = GetBezier(v1, v2, v3, v4, repeat);
+            arclen += (pt1 - pt0).magnitude;
+            if (arclen >= step * (bd + 1))
+            {
+                //print("update_points():" + arclen + "," + step);
+                //now.SetPosition( pt1);//作ったばかりのときは、transform.positionが優先。
+                now.Position = now.transform.position = pt1;
+                bd++;
+                Bead next;
+                if (now.GetNU12(0) == prev)
+                {
+                    next = now.GetNU12(2);
+                }
+                else
+                {
+                    next = now.GetNU12(0);
+                }
+                prev = now;
+                now = next;
+                if (now.ID == BBead.ID)
+                {
+                    break;
+                }
+            }
+            pt0 = pt1;
+        }
+    }
+
+    public void UpdateBeadsAtNode(Node nd)
+    {
+        //Debug.Log("UpdateBeadsAtNode");
+        //AllNodes = FindObjectsOfType<Node>();
+        //AllEdges = FindObjectsOfType<Edge>();
+        //AllBeads = FindObjectsOfType<Bead>();
+        for (int e = 0; e < AllEdges.Length; e++)
+        {
+            Edge ed = AllEdges[e];
+            if(ed.ANodeID == nd.ID || ed.BNodeID == nd.ID)
+            {
+                //Debug.Log(nd.Position);
+                UpdateBeadsOnEdge(ed);
+            }
+
+        }
+        AllBeads = FindObjectsOfType<Bead>();
+        CreateNbhdFromBead();
     }
 }
