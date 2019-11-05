@@ -24,6 +24,8 @@ public class MouseControll : MonoBehaviour {
 
     public  GameObject ThisKnot;
     Knot thisKnot;
+    public GameObject ThisMenu;
+    Menu thisMenu;
 
     Vector3 MouseDownVec;
     Node DraggedNode = null;
@@ -33,8 +35,12 @@ public class MouseControll : MonoBehaviour {
     public static bool ModifyBeads = false;
     public static bool DisplayEdgeLineRenderer = true;
 
+
     // Use this for initialization
     void Start () {
+        thisKnot = ThisKnot.GetComponent<Knot>();
+        thisMenu = ThisMenu.GetComponent<Menu>();
+        thisMenu.HideMenu();
     }
 
     void Update () {
@@ -49,6 +55,10 @@ public class MouseControll : MonoBehaviour {
         if (Input.GetMouseButtonUp(0))
         {
             OnMouseUp();
+        }
+        if (Input.anyKeyDown)
+        {
+            OnKeyDown();
         }
     }
 
@@ -185,4 +195,13 @@ public class MouseControll : MonoBehaviour {
     //{
 
     //}
+
+    void OnKeyDown()
+    {
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            if (!thisMenu.Show) thisMenu.ShowMenu();
+            else thisMenu.HideMenu();
+        }
+    }
 }
