@@ -255,7 +255,7 @@ public class Edge : MonoBehaviour
         float rate = ((v4X - v1X)* (v4X - v1X)+( v4Y - v1Y)* (v4Y - v1Y)) / 250f;// 250=計測したときのV4-V1の長さ
         float t1 = Mathf.Rad2Deg * Util.Atan2Vec(v2X - v1X, v2Y - v1Y, v4X - v1X, v4Y - v1Y);
         float t2 = Mathf.Rad2Deg * Util.Atan2Vec(v2X - v1X, v2Y - v1Y, v3X - v4X, v3Y - v4Y);
-
+        //Debug.Log(rate);
         int th1 = Mathf.FloorToInt(t1 / 10f);
         int th2 = Mathf.FloorToInt(t2 / 10f);
         if (th1 == 36)
@@ -282,8 +282,13 @@ public class Edge : MonoBehaviour
         float a21 = (float)Constant.len2[(th1 + 1) % 36,th2];
         float a22 = (float)Constant.len2[th1,(th2 + 1) % 36];
         float a2 = a20 + t1 * (a21 - a20) + t2 * (a22 - a20);
+
+        Debug.Log(ANode.R[ANodeRID] + "->" + rate * a1);
+        Debug.Log(BNode.R[BNodeRID] + "->" + rate * a2);
+
         ANode.R[ANodeRID] = rate * a1;
         BNode.R[BNodeRID] = rate * a2;
+
     }
 
 

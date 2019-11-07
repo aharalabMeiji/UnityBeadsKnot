@@ -196,7 +196,7 @@ public class Knot : MonoBehaviour
 
         GetAllThings();
         //グラフの形を整える。現状ではR[]を整えるだけ。
-        Modify();
+        //Modify();
         //
         UpdateBeads();
         //  CloseJointの設定を行う（マストではない）            
@@ -356,6 +356,7 @@ public class Knot : MonoBehaviour
     void Modify()
     {
         //Nodeのr[]を最適化する
+        Debug.Log("Modify starts.");
         AllEdges = FindObjectsOfType<Edge>();
         for (int i=0; i<AllEdges.Length; i++)
         {
@@ -641,7 +642,7 @@ public class Knot : MonoBehaviour
                                 if (node == null) continue;
                                 Bead bd = node.ThisBead;
                                 if (bd == null) continue;
-                                Debug.Log(bd.ID + "/" + AllNodes.Length+":"+bd.N1.ID+","+bd.N2.ID);
+                                //Debug.Log(bd.ID + "/" + AllNodes.Length+":"+bd.N1.ID+","+bd.N2.ID);
                                 for (int i = 0; i < 4; i++)
                                 {
                                     if (bd.GetNU12(i) != null)
@@ -669,13 +670,11 @@ public class Knot : MonoBehaviour
 
                                 }
                             }
-                            Debug.Log("kokomadekita.");
-                            AllBeads = FindObjectsOfType<Bead>();
-                            AllEdges = FindObjectsOfType<Edge>();
+                            GetAllThings();
                             //グラフの形を整える。現状ではR[]を整えるだけ。
-                            //Modify();
+                            Modify();
                             //
-                            //UpdateBeads();
+                            UpdateBeads();
                             //  CloseJointの設定を行う（マストではない）            
                             //graph.add_close_point_Joint();
                             //            Draw.beads();// drawモードの変更
