@@ -4,9 +4,11 @@ using UnityEngine;
 
 public class Menu : MonoBehaviour
 {
-    public bool Show;
     public GameObject MenuBoard;
     // Start is called before the first frame update
+
+    // board : z=-1;
+    // Text  : z=-1.5;
     void Start()
     {
     }
@@ -34,7 +36,6 @@ public class Menu : MonoBehaviour
         tm = obj.GetComponent<TextMesh>();
         tm.text = "[n] free loop";
         MenuBoard.transform.localPosition = Vector3.forward * 0.5f;
-        Show = true;
     }
 
     public void HideMenu()
@@ -53,6 +54,5 @@ public class Menu : MonoBehaviour
         //tm.text = new string("[Esc] Menu");
         tm.text = "[Esc] Menu";
         MenuBoard.transform.localPosition = Vector3.forward * 1.5f;
-        Show = false;
     }
 }

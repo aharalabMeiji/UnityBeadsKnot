@@ -23,11 +23,14 @@ public class Edge : MonoBehaviour
     private float rate, t1, t2;
     private int th1, th2;
 
+    public bool inUse;
+
     // Use this for initialization
     void Start()
     {
         BeadsNumber = 0;
         Beads = new List<Bead>();
+        inUse = true;
     }
 
     // Update is called once per frame

@@ -7,7 +7,7 @@ public class Bead : MonoBehaviour {
     public Vector3 Position;
     public int ID;
 
-    private Bead N1, U1, N2, U2;
+    public Bead N1, U1, N2, U2;
     public int NumOfNbhd; // Nbhdの数
 
     public bool Joint, MidJoint, NearJoint, BandJoint;

@@ -19,6 +19,48 @@ public class CONST
 
 }
 
+public class Display
+{
+    private static int Mode=1;
+
+    public static bool IsMenuMode()
+    {
+        return (Mode == 0);
+    }
+
+    public static bool IsDrawKnotMode()
+    {
+        return (Mode == 1);
+    }
+
+    public static bool IsFreeLoopMode()
+    {
+        return (Mode == 2);
+    }
+
+    public static bool IsEditKnotMode()
+    {
+        return (Mode == 3);
+    }
+
+    public static void SetMenuMode()
+    {
+        Mode = 0;
+    }
+    public static void SetDrawKnotMode()
+    {
+        Mode = 1;
+    }
+    public static void SetFreeLoopMode()
+    {
+        Mode = 2;
+    }
+    public static void SetEditKnotMode()
+    {
+        Mode = 3;
+    }
+}
+
 public class MouseControll : MonoBehaviour {
 
 
@@ -26,10 +68,14 @@ public class MouseControll : MonoBehaviour {
     Knot thisKnot;
     public GameObject ThisMenu;
     Menu thisMenu;
+    public GameObject StaticTools;
+    public GameObject FreeLoop;
 
     Vector3 MouseDownVec;
+    Vector3 MouseDragVec;
     Node DraggedNode = null;
     Vector3 DraggedNodeStartPosition;
+    Vector3 PreviousPosition;
 
     public static bool ModifyNode = true;
     public static bool ModifyBeads = false;
@@ -68,54 +114,99 @@ public class MouseControll : MonoBehaviour {
         MouseDownVec = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         MouseDownVec.z = 0f;
         //Debug.Log(MouseDownVec);
-        thisKnot = ThisKnot.GetComponent<Knot>();
-        thisKnot.GetAllThings();
+        if (Display.IsDrawKnotMode()) { 
+            thisKnot = ThisKnot.GetComponent<Knot>();
+            thisKnot.GetAllThings();
         
-        for(int n=0; n<thisKnot.AllNodes.Length; n++)
-        {
-            float dist = (MouseDownVec - thisKnot.AllNodes[n].Position).magnitude;
-            if(dist < 0.25){
-                DraggedNode = thisKnot.AllNodes[n];
-                DraggedNodeStartPosition = thisKnot.AllNodes[n].Position;
-                return;
+            for(int n=0; n<thisKnot.AllNodes.Length; n++)
+            {
+                float dist = (MouseDownVec - thisKnot.AllNodes[n].Position).magnitude;
+                if(dist < 0.25){
+                    DraggedNode = thisKnot.AllNodes[n];
+                    DraggedNodeStartPosition = thisKnot.AllNodes[n].Position;
+                    return;
+                }
             }
+        }
+        else if (Display.IsFreeLoopMode())
+        {
+            FreeLoop.GetComponent<FreeLoop>().AddPoint2FreeCurve(MouseDownVec);
+            PreviousPosition = MouseDownVec;
+        }
+        else if (Display.IsEditKnotMode())
+        {
+
         }
     }
 
     public void OnMouseDrag()
     {
-        if(DraggedNode != null)
+        MouseDragVec = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        MouseDragVec.z = 0f;
+        if (Display.IsDrawKnotMode())
         {
-            Vector3 tmpPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            tmpPos.z = 0f;
-            float minDist = (tmpPos - DraggedNodeStartPosition).magnitude;
-            int minNodeId = DraggedNode.ID;
-            for (int n = 0; n < thisKnot.AllNodes.Length; n++)
+            if (DraggedNode != null)
             {
-                Node nd = thisKnot.AllNodes[n];
-                if (nd.ID != DraggedNode.ID)
+                float minDist = (MouseDragVec - DraggedNodeStartPosition).magnitude;
+                int minNodeId = DraggedNode.ID;
+                for (int n = 0; n < thisKnot.AllNodes.Length; n++)
                 {
-                    float dist = (tmpPos - nd.Position).magnitude;
-                    if (dist < minDist)
+                    Node nd = thisKnot.AllNodes[n];
+                    if (nd.ID != DraggedNode.ID)
                     {
-                        return;
+                        float dist = (MouseDragVec - nd.Position).magnitude;
+                        if (dist < minDist)
+                        {
+                            return;
+                        }
                     }
                 }
+                // ドラッグされたBeadの座標を変える。
+                DraggedNode.ThisBead.Position = MouseDragVec;
+                // Nodeの座標も同期する
+                DraggedNode.Position = MouseDragVec;
+                //Debug.Log("mousePosition"+tmpPos);
+                // エッジを作り直す。// Knot.UpdateBeadsを呼び出す。
+                if (thisKnot == null) thisKnot = ThisKnot.GetComponent<Knot>();
+                thisKnot.UpdateBeadsAtNode(DraggedNode);
+                // ドラッグしているノードについて、回転して適正な位置にする。
+                // thisKnot.UpdateNodeRotation();
             }
-            // ドラッグされたBeadの座標を変える。
-            DraggedNode.ThisBead.Position = tmpPos;
-            // Nodeの座標も同期する
-            DraggedNode.Position = tmpPos;
-            //Debug.Log("mousePosition"+tmpPos);
-            // エッジを作り直す。// Knot.UpdateBeadsを呼び出す。
-            ThisKnot.GetComponent<Knot>().UpdateBeadsAtNode(DraggedNode);
-            // ドラッグしているノードについて、回転して適正な位置にする。
+        }
+        else if (Display.IsFreeLoopMode())
+        {
+            if((PreviousPosition - MouseDragVec).magnitude > 0.2f)
+            {
+                FreeLoop.GetComponent<FreeLoop>().AddPoint2FreeCurve(MouseDragVec);
+                PreviousPosition = MouseDragVec;
+            }
+            // スタート地点に近ければ、画面上にメッセージを出す
+            //????
+        }
+        else if (Display.IsEditKnotMode())
+        {
+
         }
     }
 
     public void OnMouseUp()
     {
-        DraggedNode = null;
+        if (Display.IsDrawKnotMode())
+        {
+            DraggedNode = null;
+        }
+        else if (Display.IsFreeLoopMode())
+        {
+
+        }
+        else if (Display.IsEditKnotMode())
+        {
+
+        }
+        else if (Display.IsMenuMode())
+        {
+
+        }
     }
 
 
@@ -200,8 +291,63 @@ public class MouseControll : MonoBehaviour {
     {
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            if (!thisMenu.Show) thisMenu.ShowMenu();
-            else thisMenu.HideMenu();
+            if (Display.IsMenuMode())
+            {
+                thisMenu.HideMenu();
+                Display.SetDrawKnotMode();
+            }
+            else
+            {
+                thisMenu.ShowMenu();
+                Display.SetMenuMode();
+            }
         }
+        else if (Input.GetKeyDown(KeyCode.N))
+        {
+            KeyCodeN();
+        }
+        else if (Input.GetKeyDown(KeyCode.O))
+        {
+            KeyCodeO();
+        }
+    }
+
+    void KeyCodeN()
+    {
+        // 消してよいですか[保存][消してよい][戻る]的なダイアログが欲しい
+        // 消す
+        thisKnot.ClearAll();
+        // マウスドラッグで一本線を入力するモードに入る
+        Display.SetFreeLoopMode();
+        // Mode.
+        //　閉じるような曲線の入力を受け付ける
+        //　点列から交点を抽出
+        //　グラフ構造を抽出
+
+    }
+
+    void KeyCodeO()
+    {
+        // ファイルダイアログをだしてファイル名を取得
+        string[] exts = { "txt", "jpg", "png", "dwk", "pdt"};
+        string filePath = Crosstales.FB.FileBrowser.OpenSingleFile("Open a BeadsKnot file", "Samples", exts);
+        Debug.Log(filePath);
+        if (filePath.Length < 4) return;
+        // 拡張子で場合分け
+        string ext = filePath.Substring(filePath.Length-3);
+        // jpg, png  画像からの読み込み
+        if(ext == "jpg" || ext == "png")
+        {
+        }
+        // dwk ドーカー表示
+        // if(ext == "dwk"){}
+        // pdt pData ファイル？
+        // if(ext == "dwk"){}
+        // txt BeadsKnotフォーマット
+        else
+        {
+            thisKnot.OpenTxtFile(filePath);
+        }
+        // OpenBeadsKnotFile(string filename)
     }
 }
