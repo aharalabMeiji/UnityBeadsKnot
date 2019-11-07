@@ -86,7 +86,6 @@ public class Knot : MonoBehaviour
             AllNodes[i].gameObject.SetActive(false);
             Destroy(AllNodes[i].gameObject);
         }
-        AllNodes = FindObjectsOfType<Node>();
     }
 
     void ClearAllEdges()
@@ -94,9 +93,9 @@ public class Knot : MonoBehaviour
         AllEdges = FindObjectsOfType<Edge>();
         for (int i = AllEdges.Length - 1; i >= 0; i--)
         {
+            AllEdges[i].gameObject.SetActive(false);
             Destroy(AllEdges[i].gameObject);
         }
-        AllEdges = FindObjectsOfType<Edge>();
     }
 
     void ClearAllBeads()
@@ -104,10 +103,9 @@ public class Knot : MonoBehaviour
         AllBeads = FindObjectsOfType<Bead>();
         for (int i = AllBeads.Length - 1; i >= 0; i--)
         {
+            AllBeads[i].gameObject.SetActive(false);
             Destroy(AllBeads[i].gameObject);
-            AllBeads[i] = null;
         }
-        AllBeads = FindObjectsOfType<Bead>();
     }
 
     void CreateGraphFromData(double[,] nodes, int[,] edges)
@@ -539,12 +537,12 @@ public class Knot : MonoBehaviour
                 string str;
                 int phase = 0;
                 int repeat = 0;
+                int CountBeads = 0;
                 do
                 {
                     str = reader.ReadLine();
                     if (str != null)
                     {
-                        int CountBeads = 0;
                         if (phase == 0 && str.Contains("BeadsKnot,0"))
                         {
                             phase = 1;
@@ -630,6 +628,7 @@ public class Knot : MonoBehaviour
                                 // edに対応するBeadを一つだけ作る。
                                 Bead bd = AddBead(0.5f * (ABead.Position + BBead.Position));
                                 bd.ID = CountBeads;
+                                Debug.Log("***"+bd.Position+":"+bd.ID);
                                 CountBeads++;
 
                                 bd.SetNU12(ABead, null, BBead, null);
@@ -645,7 +644,7 @@ public class Knot : MonoBehaviour
                                 Debug.Log(bd.ID + "/" + AllNodes.Length+":"+bd.N1.ID+","+bd.N2.ID);
                                 for (int i = 0; i < 4; i++)
                                 {
-                                    if (bd.GetNU12(0) != null)
+                                    if (bd.GetNU12(i) != null)
                                     {
                                         bd.NumOfNbhd++;
                                     }
@@ -676,11 +675,11 @@ public class Knot : MonoBehaviour
                             //グラフの形を整える。現状ではR[]を整えるだけ。
                             //Modify();
                             //
-                            UpdateBeads();
+                            //UpdateBeads();
                             //  CloseJointの設定を行う（マストではない）            
                             //graph.add_close_point_Joint();
                             //            Draw.beads();// drawモードの変更
-                            //CreateNbhdFromBead();
+                            CreateNbhdFromBead();
                         }
 
                     }
