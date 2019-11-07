@@ -252,7 +252,7 @@ public class Edge : MonoBehaviour
         float v3Y = v3.y;
         float v4X = BNode.Position.x;
         float v4Y = BNode.Position.y;
-        float rate = ((v4X - v1X)* (v4X - v1X)+( v4Y - v1Y)* (v4Y - v1Y)) / 250f;// 250=計測したときのV4-V1の長さ
+        float rate = Mathf.Sqrt((v4X - v1X)* (v4X - v1X)+( v4Y - v1Y)* (v4Y - v1Y)) / 250f;// 250=計測したときのV4-V1の長さ
         float t1 = Mathf.Rad2Deg * Util.Atan2Vec(v2X - v1X, v2Y - v1Y, v4X - v1X, v4Y - v1Y);
         float t2 = Mathf.Rad2Deg * Util.Atan2Vec(v2X - v1X, v2Y - v1Y, v3X - v4X, v3Y - v4Y);
         //Debug.Log(rate);
