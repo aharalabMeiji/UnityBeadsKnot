@@ -525,7 +525,10 @@ public class Knot : MonoBehaviour
     /// </summary>
     public void ClearAll()
     {//
-
+        ClearAllBeads();
+        ClearAllNodes();
+        ClearAllEdges();
+        GetAllThings();
     }
 
     public void OpenTxtFile(string path)
