@@ -177,10 +177,21 @@ public class MouseControll : MonoBehaviour {
         {
             if((PreviousPosition - MouseDragVec).magnitude > 0.2f)
             {
-                FreeLoop.GetComponent<FreeLoop>().AddPoint2FreeCurve(MouseDragVec);
+                FreeLoop freeloop = FreeLoop.GetComponent<FreeLoop>();
+                freeloop.AddPoint2FreeCurve(MouseDragVec);
                 PreviousPosition = MouseDragVec;
+                // スタート地点に近ければ、画面上にメッセージを出す
+                if((MouseDownVec - MouseDragVec).magnitude < 1f /* && ---- */)
+                {
+                    freeloop.RenderCircleEffect();
+                    freeloop.CircleEffectPosition = MouseDownVec;
+                    freeloop.CircleEffect.GetComponent<LineRenderer>().enabled = freeloop.CircleEffectEnable = true;
+                }
+                else
+                {
+                    freeloop.CircleEffect.GetComponent<LineRenderer>().enabled = freeloop.CircleEffectEnable = false ;
+                }
             }
-            // スタート地点に近ければ、画面上にメッセージを出す
             //????
         }
         else if (Display.IsEditKnotMode())

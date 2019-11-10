@@ -5,17 +5,28 @@ using UnityEngine;
 public class FreeLoop : MonoBehaviour
 {
     public List<Vector3> FreeCurve;
+    public GameObject CircleEffect;
+
+    Vector3[] CircleEffectVec;
+    float CircleEffectRadius;
+    public Vector3 CircleEffectPosition;
+    public bool CircleEffectEnable;
 
     void Start()
     {
         FreeCurve = new List<Vector3>();
         GetComponent<LineRenderer>().enabled = false;
+        CircleEffectVec = new Vector3[20];
+        CircleEffect.GetComponent<LineRenderer>().enabled = CircleEffectEnable = false;
+        CircleEffectPosition = Vector3.zero;
+        CircleEffectRadius = 1f;
     }
 
 
     void Update()
     {
         RenderFreeCurve();
+        RenderCircleEffect();
     }
 
     public void AddPoint2FreeCurve(Vector3 v)
@@ -45,6 +56,21 @@ public class FreeLoop : MonoBehaviour
         else
         {
             LR.enabled = false;
+        }
+    }
+
+    public void RenderCircleEffect()
+    {
+        if (CircleEffectEnable)
+        {
+            LineRenderer LR = CircleEffect.GetComponent<LineRenderer>();
+            LR.positionCount = 20;
+            for (int i=0; i<20; i++)
+            {
+                CircleEffectVec[i] = CircleEffectRadius * (Vector3.right * Mathf.Cos(Mathf.PI * i / 10) + Vector3.up * Mathf.Sin(Mathf.PI * i / 10));
+            }
+            LR.SetPositions(CircleEffectVec);
+            CircleEffect.transform.localPosition = CircleEffectPosition;
         }
     }
 }
