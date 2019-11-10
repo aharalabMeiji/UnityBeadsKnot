@@ -71,6 +71,8 @@ public class FreeLoop : MonoBehaviour
             }
             LR.SetPositions(CircleEffectVec);
             CircleEffect.transform.localPosition = CircleEffectPosition;
+            CircleEffectRadius += 0.02f;
+            if (CircleEffectRadius > .7f) CircleEffectRadius = 0.2f;
         }
     }
 }
