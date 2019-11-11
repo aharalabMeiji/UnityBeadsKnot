@@ -241,8 +241,8 @@ public class MouseControll : MonoBehaviour {
                 // まず1列のbeadの列を作る。
                 for (int b = 0; b < freeCurveSize; b++)
                 {
-                    //ビーズを追加
-                    thisKnot.AddBead(freeloop.FreeCurve[b]);
+                    //ビーズを追加(b=ID番号)
+                    thisKnot.AddBead(freeloop.FreeCurve[b],b);
                 }
                 thisKnot.AllBeads = FindObjectsOfType<Bead>();
                 freeCurveSize = thisKnot.AllBeads.Length;// おそらく無意味
@@ -349,7 +349,20 @@ public class MouseControll : MonoBehaviour {
                         GameObject obj2 = bd2.gameObject;
                         obj2.SetActive(false);//やる意味が分からないが、やっておいたほうがいいらしい。
                         Destroy(obj2);// 消去！
-                    }   
+                    }
+                    // 行先のJoint情報を調べる
+                    for (int b1 = 0; b1 < freeCurveSize; b1++)
+                    {
+                        Bead bd = thisKnot.AllBeads[b1];
+                        if (bd.Joint)
+                        {
+                            for(int r1=0; r1<4; r1++)
+                            {
+                                PairInt br2 = thisKnot.FindEndOfEdgeOnBead(bd, r1);
+                            }
+                        }
+                    }
+                    // ジョイント間のビーズ数を数える。
                     // midJointを作る
 
                     // Node,Edgeを作る

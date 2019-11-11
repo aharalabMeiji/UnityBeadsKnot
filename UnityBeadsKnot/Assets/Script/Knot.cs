@@ -38,6 +38,19 @@ public class Knot : MonoBehaviour
         return Bd;
     }
 
+    public Bead AddBead(Vector3 v, int id)
+    {
+        GameObject prefab = Resources.Load<GameObject>("Prefabs/Bead");
+        GameObject obj = Instantiate(prefab, v, Quaternion.identity, Beads.transform);
+        Bead Bd = obj.GetComponent<Bead>();
+        Bd.Position = v;
+        Bd.SetNU12(null, null, null, null);
+        Bd.NumOfNbhd = 0;
+        Bd.ID = id;
+        Bd.Joint = Bd.MidJoint = Bd.NearJoint = Bd.BandJoint = false;
+        return Bd;
+    }
+
     /// <summary>
     /// 新しくNbhdを作る。
     /// </summary>
@@ -704,4 +717,20 @@ public class Knot : MonoBehaviour
         //World.Mode = MODE.ADD_POINT;
     }
 
+
+    // findOnBeads系のメソッド
+    /// <summary>
+    /// ビーズbから初めて、r方向へたどり、最初にMidJointかJointを見つけたら、そのビーズIDとr方向をペアにして返す。
+    /// </summary>
+    public PairInt FindEndOfEdgeOnBead(Bead b, int r)
+    {
+        Bead Prev = b;
+        Bead Now = b.GetNU12(r);
+        if(Now == null)
+        {
+            return new PairInt(-1, -1);// 失敗
+        }
+
+        return new PairInt(-1, -1);// 失敗
+    }
 }
