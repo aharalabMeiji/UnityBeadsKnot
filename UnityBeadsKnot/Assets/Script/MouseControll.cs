@@ -333,17 +333,32 @@ public class MouseControll : MonoBehaviour {
                 }
                 else
                 {// さもなくば、交点に当たるところをJointにする
-                     //trace.get(tr1+1) と trace.get(tr2+1)とを合流してJointにする。
-                     //println(jt, "meets", jt2);
+                    for(int i=0; i<meets.Count; i++)
+                    {
+                        int b1 = meets[i].first;
+                        int b2 = meets[i].second;
+                        Bead bd1 = thisKnot.AllBeads[b1];
+                        Bead bd2 = thisKnot.AllBeads[b2];
+                        bd1.Joint = true;
+                        //Nbhdの繋ぎ替え
+                        bd1.U1 = bd2.N1;
+                        bd1.U2 = bd2.N2;
+                        thisKnot.AllBeads[b2 - 1].N1 = bd1;
+                        thisKnot.AllBeads[b2 + 1].N2 = bd1;
+                        //消去
+                        GameObject obj2 = bd2.gameObject;
+                        obj2.SetActive(false);//やる意味が分からないが、やっておいたほうがいいらしい。
+                        Destroy(obj2);// 消去！
+                    }   
+                    // midJointを作る
 
-                    //Bead jtBead = data.points.get(jt);
-                    //Bead jt2Bead = data.points.get(jt2);
-                    //jtBead.Joint = true;
-                    //jtBead.u1 = jt2Bead.n1;
-                    //jtBead.u2 = jt2Bead.n2;
-                    //data.removeBeadFromPoint(jt2);
-                    //data.getBead(tr2).n1 = jt;
-                    //data.getBead((tr2 + 2) % traceNumber).n2 = jt;
+                    // Node,Edgeを作る
+
+                    // Nbhdを作る
+
+                    //モードを戻す
+                    Display.SetDrawKnotMode();
+
                 }
             }
         }
