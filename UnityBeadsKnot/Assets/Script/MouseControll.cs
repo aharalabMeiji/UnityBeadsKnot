@@ -61,6 +61,23 @@ public class Display
     }
 }
 
+public class PairInt
+{
+    public int first, second;
+    public PairInt(int a, int b)
+    {
+        first = a;
+        second = b;
+    }
+
+    public bool Contained(int x)
+    {
+        if(x==first || x == second)
+            return true;
+        return false;
+    }
+}
+
 public class MouseControll : MonoBehaviour {
 
 
@@ -208,7 +225,127 @@ public class MouseControll : MonoBehaviour {
         }
         else if (Display.IsFreeLoopMode())
         {
+            FreeLoop freeloop = FreeLoop.GetComponent<FreeLoop>();
+            //スタート地点に近くない場所で終了した場合には、すべてを消去して終了
+            if (!freeloop.CircleEffectEnable)
+            {
+                freeloop.FreeCurve.Clear();
+                Display.SetDrawKnotMode();
+            }
+            else //
+            {
+                //スタート地点に近い場所で終わった場合は、まずはBeadへと変換する。
+                // すべてのビーズを消す（不要）
+                thisKnot.ClearAll();
+                int freeCurveSize = freeloop.FreeCurve.Count;
+                // まず1列のbeadの列を作る。
+                for (int b = 0; b < freeCurveSize; b++)
+                {
+                    //ビーズを追加
+                    thisKnot.AddBead(freeloop.FreeCurve[b]);
+                }
+                thisKnot.AllBeads = FindObjectsOfType<Bead>();
+                freeCurveSize = thisKnot.AllBeads.Length;// おそらく無意味
+                for (int b = 0; b < freeCurveSize; b++)
+                {
+                    // N1,N2, NumOfNbhdを設定
+                    Bead bd = thisKnot.AllBeads[b];
+                    bd.N1 = thisKnot.AllBeads[(b + 1) % freeCurveSize];
+                    bd.N2 = thisKnot.AllBeads[(b + freeCurveSize - 1) % freeCurveSize];
+                    bd.NumOfNbhd = 2;
+                }
+                //FreeCurveをクリアしておく
+                freeloop.CircleEffect.GetComponent<LineRenderer>().enabled
+                    = freeloop.CircleEffectEnable = false;
+                freeloop.FreeCurve.Clear();
+                //モードを戻しておく
+                Display.SetDrawKnotMode();
 
+                //重複も許して交点を検出
+                List<PairInt> meets = new List<PairInt>();
+                for (int b1 = 0; b1 < freeCurveSize; b1++)
+                {
+                    int b1n = (b1 + 1) % freeCurveSize;
+                    int b1p = (b1 + freeCurveSize - 1) % freeCurveSize;
+                    for (int b2 = b1 + 1; b2 < freeCurveSize; b2++)
+                    {
+                        int b2n = (b2 + 1) % freeCurveSize;
+                        int b2p = (b2 + freeCurveSize - 1) % freeCurveSize;
+                        //int difference = (b2 - b1 + freeCurveSize) % freeCurveSize;//なぜ？
+                        int difference = b2 - b1;
+                        if (2 < difference && difference < freeCurveSize - 2)
+                        {// そもそも異なる場所である保証。
+                            float x1 = thisKnot.AllBeads[b1p].Position.x;
+                            float y1 = thisKnot.AllBeads[b1p].Position.y;
+                            float x2 = thisKnot.AllBeads[b1n].Position.x;
+                            float y2 = thisKnot.AllBeads[b1n].Position.y;
+                            float x3 = thisKnot.AllBeads[b2p].Position.x;
+                            float y3 = thisKnot.AllBeads[b2p].Position.y;
+                            float x4 = thisKnot.AllBeads[b2n].Position.x;
+                            float y4 = thisKnot.AllBeads[b2n].Position.y;
+                            // (x2-x1)s+x1 = (x4-x3)t+x3
+                            // (y2-y1)s+y1 = (y4-y3)t+y3
+                            // (x2-x1)s - (x4-x3)t = +x3-x1
+                            // (y2-y1)s - (y4-y3)t = +y3-y1
+                            float a = x2 - x1;
+                            float b = -x4 + x3;
+                            float c = y2 - y1;
+                            float d = -y4 + y3;
+                            float p = x3 - x1;
+                            float q = y3 - y1;
+                            float s1 = p * d - b * q; // s = s1/st
+                            float t1 = a * q - p * c; // t = t1/st
+                            float st = a * d - b * c;
+                            if (st < 0)
+                            {
+                                st *= -1;
+                                s1 *= -1;
+                                t1 *= -1;
+                            }
+                            if (0 < s1 && s1 < st && 0 < t1 && t1 < st)
+                            { // 線分が交わっている条件
+                                //重複を排してListに貯める
+                                bool OK = true;
+                                for (int mt = 0; mt < meets.Count; mt++)
+                                {
+                                    int m1 = meets[mt].first;
+                                    int m2 = meets[mt].second;
+                                    if (Math.Abs(b1 - m1) <= 2 && Math.Abs(b2 - m2) <= 2)
+                                    {
+                                        Debug.Log("(" + b1 + "," + b2 + ")=(" + m1 + "," + m2 + ")");
+                                        OK = false;
+                                        break;
+                                    }
+                                }
+                                if (OK)
+                                {
+                                    meets.Add(new PairInt(b1, b2));
+                                }
+                            }
+                        }
+                    }
+                }
+                if(meets.Count == 0)
+                { // 交点の個数が0ならば、Beadを全部捨てる。
+                    thisKnot.ClearAllBeads();
+                    //モードを戻しておく
+                    Display.SetDrawKnotMode();
+                }
+                else
+                {// さもなくば、交点に当たるところをJointにする
+                     //trace.get(tr1+1) と trace.get(tr2+1)とを合流してJointにする。
+                     //println(jt, "meets", jt2);
+
+                    //Bead jtBead = data.points.get(jt);
+                    //Bead jt2Bead = data.points.get(jt2);
+                    //jtBead.Joint = true;
+                    //jtBead.u1 = jt2Bead.n1;
+                    //jtBead.u2 = jt2Bead.n2;
+                    //data.removeBeadFromPoint(jt2);
+                    //data.getBead(tr2).n1 = jt;
+                    //data.getBead((tr2 + 2) % traceNumber).n2 = jt;
+                }
+            }
         }
         else if (Display.IsEditKnotMode())
         {

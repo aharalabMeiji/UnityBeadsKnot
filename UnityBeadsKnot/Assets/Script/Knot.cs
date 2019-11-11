@@ -26,7 +26,7 @@ public class Knot : MonoBehaviour
         AdjustDisplay();
     }
 
-    Bead AddBead(Vector3 v)
+    public Bead AddBead(Vector3 v)
     {
         GameObject prefab = Resources.Load<GameObject>("Prefabs/Bead");
         GameObject obj = Instantiate(prefab, v, Quaternion.identity, Beads.transform);
@@ -98,7 +98,7 @@ public class Knot : MonoBehaviour
         }
     }
 
-    void ClearAllBeads()
+    public void ClearAllBeads()
     {
         AllBeads = FindObjectsOfType<Bead>();
         for (int i = AllBeads.Length - 1; i >= 0; i--)

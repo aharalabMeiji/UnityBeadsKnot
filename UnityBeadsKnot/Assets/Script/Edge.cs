@@ -283,8 +283,8 @@ public class Edge : MonoBehaviour
         float a22 = (float)Constant.len2[th1,(th2 + 1) % 36];
         float a2 = a20 + t1 * (a21 - a20) + t2 * (a22 - a20);
 
-        Debug.Log(ANode.R[ANodeRID] + "->" + rate * a1);
-        Debug.Log(BNode.R[BNodeRID] + "->" + rate * a2);
+        //Debug.Log(ANode.R[ANodeRID] + "->" + rate * a1);
+        //Debug.Log(BNode.R[BNodeRID] + "->" + rate * a2);
 
         ANode.R[ANodeRID] = rate * a1;
         BNode.R[BNodeRID] = rate * a2;
