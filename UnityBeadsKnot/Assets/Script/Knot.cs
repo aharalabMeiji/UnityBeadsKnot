@@ -769,4 +769,92 @@ public class Knot : MonoBehaviour
         }
         return new PairInt(-1, -1);// 失敗
     }
+
+    /// <summary>
+    /// ビーズbから初めて、r方向へたどり、最初にMidJointかJointを見つけたら、ビーズの個数を返す。
+    /// </summary>
+    public int CountBeadsOnEdge(Bead b, int r, bool midJoint = false)
+    {
+        Bead Prev = b;
+        Bead Now = b.GetNU12(r);
+        if (Now == null)
+        {
+            return 0;// 失敗
+        }
+        int count = 0;
+        Bead Next = null;
+        int MaxRepeat = AllBeads.Length;
+        //以降は基本的にN1,N2しか見ない。
+        for (int repeat = 0; repeat < MaxRepeat; repeat++)
+        {
+            if (Now.N1 == Prev || Now.N1.ID == Prev.ID)//IDベースですすめる。
+            {
+                Next = Now.N2;
+            }
+            else if (Now.N2 == Prev || Now.N2.ID == Prev.ID)
+            {
+                Next = Now.N1;
+            }
+            else
+            {
+                Debug.Log("error in FindEndOfEdgeOnBead : 0 ");
+                break;
+            }
+            Prev = Now;
+            Now = Next;
+            count++;
+            if (Now.Joint || (midJoint && Now.MidJoint))
+            {
+                return count;
+            }
+        }
+        return 0;// 失敗
+    }
+
+    /// <summary>
+    /// ビーズbから初めて、r方向へたどり、ｃ個めのBeadを返す。
+    /// </summary>
+    public Bead GetBeadOnEdge(Bead b, int r, int c)
+    {
+        Bead Prev = b;
+        Bead Now = b.GetNU12(r);
+        if (Now == null)
+        {
+            return null;// 失敗
+        }
+        int count = c-1;
+        Bead Next = null;
+        int MaxRepeat = AllBeads.Length;
+        //以降は基本的にN1,N2しか見ない。
+        for (int repeat = 0; repeat < MaxRepeat; repeat++)
+        {
+            if (Now.N1 == Prev || Now.N1.ID == Prev.ID)//IDベースですすめる。
+            {
+                Next = Now.N2;
+            }
+            else if (Now.N2 == Prev || Now.N2.ID == Prev.ID)
+            {
+                Next = Now.N1;
+            }
+            else
+            {
+                Debug.Log("error in FindEndOfEdgeOnBead : 0 ");
+                break;
+            }
+            Prev = Now;
+            Now = Next;
+            count--;
+            if (Now.Joint)
+            {
+                return null;//失敗
+            }
+            if (count <= 0)
+            {
+                return Now;
+            }
+        }
+        return null;// 失敗
+    }
+
+
 }
