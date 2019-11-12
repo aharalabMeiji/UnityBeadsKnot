@@ -722,7 +722,7 @@ public class Knot : MonoBehaviour
     /// <summary>
     /// ビーズbから初めて、r方向へたどり、最初にMidJointかJointを見つけたら、そのビーズIDとr方向をペアにして返す。
     /// </summary>
-    public PairInt FindEndOfEdgeOnBead(Bead b, int r)
+    public PairInt FindEndOfEdgeOnBead(Bead b, int r, bool midJoint = false)
     {
         Bead Prev = b;
         Bead Now = b.GetNU12(r);
@@ -730,7 +730,43 @@ public class Knot : MonoBehaviour
         {
             return new PairInt(-1, -1);// 失敗
         }
-
+        Bead Next = null;
+        int MaxRepeat = AllBeads.Length;
+        //以降は基本的にN1,N2しか見ない。
+        for(int repeat=0; repeat<MaxRepeat; repeat++)
+        {
+            if(Now.N1 == Prev || Now.N1.ID == Prev.ID)//IDベースですすめる。
+            {
+                Next = Now.N2;
+            }
+            else if(Now.N2 == Prev || Now.N2.ID == Prev.ID)
+            {
+                Next = Now.N1;
+            }
+            else
+            {
+                Debug.Log("error in FindEndOfEdgeOnBead : 0 ");
+                break;
+            }
+            Prev = Now;
+            Now = Next;
+            if(Now.Joint || (midJoint && Now.MidJoint))
+            {
+                if (Prev.ID == Now.N1.ID)
+                    return new PairInt(Now.ID, 0);
+                else if (Prev.ID == Now.U1.ID)
+                    return new PairInt(Now.ID, 1);
+                else if (Prev.ID == Now.N2.ID)
+                    return new PairInt(Now.ID, 2);
+                else if (Prev.ID == Now.U2.ID)
+                    return new PairInt(Now.ID, 2);
+                else
+                {
+                    Debug.Log("error in FindEndOfEdgeOnBead : 1 ");
+                    break;
+                }
+            }
+        }
         return new PairInt(-1, -1);// 失敗
     }
 }
