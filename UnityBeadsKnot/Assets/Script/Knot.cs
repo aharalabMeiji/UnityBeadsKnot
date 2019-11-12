@@ -534,6 +534,20 @@ public class Knot : MonoBehaviour
     }
 
     /// <summary>
+    /// id番号でBeadを探す
+    /// </summary>
+    public Bead FindBeadByID(int id)
+    {
+        //AllBeads = FindObjectsOfType<Bead>();
+        for(int b=0; b < AllBeads.Length; b++)
+        {
+            Bead bd = AllBeads[b];
+            if (bd.ID == id)
+                return bd;
+        }
+        return null;
+    }
+    /// <summary>
     /// すべてのBead, Node, Edgeを消去する
     /// </summary>
     public void ClearAll()
@@ -754,12 +768,12 @@ public class Knot : MonoBehaviour
             {
                 if (Prev.ID == Now.N1.ID)
                     return new PairInt(Now.ID, 0);
-                else if (Prev.ID == Now.U1.ID)
+                else if (Now.U1 != null && Prev.ID == Now.U1.ID)
                     return new PairInt(Now.ID, 1);
                 else if (Prev.ID == Now.N2.ID)
                     return new PairInt(Now.ID, 2);
-                else if (Prev.ID == Now.U2.ID)
-                    return new PairInt(Now.ID, 2);
+                else if (Now.U2 != null && Prev.ID == Now.U2.ID)
+                    return new PairInt(Now.ID, 3);
                 else
                 {
                     Debug.Log("error in FindEndOfEdgeOnBead : 1 ");
@@ -822,7 +836,7 @@ public class Knot : MonoBehaviour
         {
             return null;// 失敗
         }
-        int count = c-1;
+        int count = c;
         Bead Next = null;
         int MaxRepeat = AllBeads.Length;
         //以降は基本的にN1,N2しか見ない。

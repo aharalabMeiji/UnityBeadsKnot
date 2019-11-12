@@ -192,7 +192,7 @@ public class MouseControll : MonoBehaviour {
         }
         else if (Display.IsFreeLoopMode())
         {
-            if((PreviousPosition - MouseDragVec).magnitude > 0.2f)
+            if((PreviousPosition - MouseDragVec).magnitude > 0.1f)
             {
                 FreeLoop freeloop = FreeLoop.GetComponent<FreeLoop>();
                 freeloop.AddPoint2FreeCurve(MouseDragVec);
@@ -350,20 +350,31 @@ public class MouseControll : MonoBehaviour {
                         obj2.SetActive(false);//やる意味が分からないが、やっておいたほうがいいらしい。
                         Destroy(obj2);// 消去！
                     }
+                    thisKnot.AllBeads = FindObjectsOfType<Bead>();
+                    freeCurveSize = thisKnot.AllBeads.Length;
                     // 行先のJoint情報を調べる
                     for (int b1 = 0; b1 < freeCurveSize; b1++)
                     {
                         Bead bd = thisKnot.AllBeads[b1];
                         if (bd.Joint)
                         {
-                            for(int r1=0; r1<4; r1++)
+                            for (int r1 = 0; r1 < 4; r1++)
                             {
-                                PairInt br2 = thisKnot.FindEndOfEdgeOnBead(bd, r1);
+                                PairInt br2 = thisKnot.FindEndOfEdgeOnBead(bd, r1,true);
+                                Bead endBead = thisKnot.FindBeadByID(br2.first);
+                                if (endBead != null && endBead.Joint)
+                                {
+                                    // ジョイント間のビーズ数を数える。
+                                    int count = thisKnot.CountBeadsOnEdge(bd, r1);
+                                    // midJointを作る
+                                    Bead midJointBead = thisKnot.GetBeadOnEdge(bd, r1, Mathf.FloorToInt(count / 2));
+                                    if(midJointBead != null)
+                                        midJointBead.MidJoint = true;
+                                    Debug.Log(bd.ID + "," + r1 + "->" + br2.first + "," + br2.second + "(" + count + ")");
+                                }
                             }
                         }
                     }
-                    // ジョイント間のビーズ数を数える。
-                    // midJointを作る
 
                     // Node,Edgeを作る
 
