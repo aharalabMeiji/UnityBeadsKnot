@@ -193,6 +193,7 @@ public class MouseControll : MonoBehaviour {
         else if (Display.IsFreeLoopMode())
         {
             if((PreviousPosition - MouseDragVec).magnitude > 0.1f)
+                // 未解決 // だいたい同じ方向を向いている、という条件も付けるか？
             {
                 FreeLoop freeloop = FreeLoop.GetComponent<FreeLoop>();
                 freeloop.AddPoint2FreeCurve(MouseDragVec);
@@ -209,7 +210,6 @@ public class MouseControll : MonoBehaviour {
                     freeloop.CircleEffect.GetComponent<LineRenderer>().enabled = freeloop.CircleEffectEnable = false ;
                 }
             }
-            //????
         }
         else if (Display.IsEditKnotMode())
         {
@@ -341,6 +341,7 @@ public class MouseControll : MonoBehaviour {
                         Bead bd2 = thisKnot.AllBeads[b2];
                         bd1.Joint = true;
                         //Nbhdの繋ぎ替え
+                        // これをどちらにどちらをつなぐかは、選ぶ必要がある。
                         bd1.U1 = bd2.N1;
                         bd1.U2 = bd2.N2;
                         thisKnot.AllBeads[b2 - 1].N1 = bd1;
