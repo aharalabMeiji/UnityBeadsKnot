@@ -377,8 +377,64 @@ public class MouseControll : MonoBehaviour {
                         }
                     }
 
-                    // Node,Edgeを作る
-
+                    // Nodeを追加する
+                    thisKnot.AllBeads = FindObjectsOfType<Bead>();
+                    thisKnot.ClearAllNodes();
+                    int nodeID = 0;
+                    // AllBeadsからJointだけを取り出してNodeにする
+                    // 基本的に二重手間だと思うが、特に上に組み込むことはしない。
+                    for (int i=0; i<thisKnot.AllBeads.Length; i++)
+                    {
+                        Bead bd = thisKnot.AllBeads[i];
+                        if (bd.Joint)
+                        {
+                            Node nd = thisKnot.AddNode(bd.Position,nodeID);
+                            nodeID++;
+                            nd.ThisBead = bd;
+                            nd.Theta = 0f;  //ここでできるだけ計算する
+                        }
+                    }
+                    // AllBeadsからMidJointだけを取り出してNodeにする。（以上で通し番号をつける）
+                    // 基本的に二重手間だと思うが、特に上に組み込むことはしない。
+                    for (int i = 0; i < thisKnot.AllBeads.Length; i++)
+                    {
+                        Bead bd = thisKnot.AllBeads[i];
+                        if (bd.MidJoint)
+                        {
+                            Node nd = thisKnot.AddNode(bd.Position, nodeID);
+                            nodeID++;
+                            nd.ThisBead = bd;
+                            nd.Theta = 0f;  //ここでできるだけ計算する
+                        }
+                    }
+                    thisKnot.AllNodes = FindObjectsOfType<Node>();
+                    // Edgeを追加する
+                    thisKnot.ClearAllEdges();
+                    int edgeID = 0;
+                    // JointとMidJointからエッジを探し出してデータ化する
+                    // 基本的に二重手間だと思うが、特に上に組み込むことはしない。
+                    for(int i=0; i<thisKnot.AllNodes.Length; i++)
+                    {
+                        Node nd = thisKnot.AllNodes[i];
+                        Bead bd = nd.ThisBead;
+                        if (bd.Joint)//おそらく、JointからMidJointへのエッジしか存在しない。
+                        {
+                            for (int r = 0; r < 4; r++)
+                            {
+                                PairInt br = thisKnot.FindEndOfEdgeOnBead(bd, 0, true);
+                                if (br.first != -1)
+                                {
+                                    Edge ed = thisKnot.AddEdge(bd.ID, 0, br.first, br.second, edgeID);
+                                    edgeID++;
+                                }
+                            }
+                        }
+                        //else if (bd.MidJoint)
+                        //{
+                        //}
+                    }
+                    thisKnot.AllEdges = FindObjectsOfType<Edge>();
+                    // 形を整える
                     // Nbhdを作る
 
                     //モードを戻す
@@ -398,66 +454,7 @@ public class MouseControll : MonoBehaviour {
     }
 
 
-    //Node AddNode(float x, float y, float t)
-    //{
-    //    PreFab = Resources.Load("Prefabs/Node") as GameObject;
-    //    GameObject go = Node.Instantiate<GameObject>(PreFab, Vector3.zero, Quaternion.identity);
-    //    Node nd = go.GetComponent<Node>();
-    //    nd.R = new float[4];
-    //    nd.EdgeID = new int[4];
-    //    nd.SetNodeCoord(x, y, t);
-    //    for (int i = 0; i < 4; i++)
-    //    {
-    //        nd.R[i] = 1f;
-    //    }
-    //    //Debug.Log("R[3] = "+nd.R[3]);
-    //    nd.ID = NodesID;
-    //    NodesID++;
-    //    return nd;
-    //}
 
-    //Edge AddEdge(int ID1, int ID2, int RID1, int RID2)
-    //{
-    //    PreFab = Resources.Load("Prefabs/Edge") as GameObject;
-    //    GameObject go = Node.Instantiate<GameObject>(PreFab, Vector3.zero, Quaternion.identity);
-    //    Edge ed = go.GetComponent<Edge>();
-    //    ed.SetEdgePara(ID1,ID2, RID1, RID2);
-    //    Debug.Log("" + ed.ANodeID + " " + ed.BNodeID);
-    //    ed.ID = EdgesID;
-    //    GetNodeAt(ID1).EdgeID[RID1] = EdgesID;
-    //    GetNodeAt(ID2).EdgeID[RID2] = EdgesID;
-    //    EdgesID++;
-    //    return ed;
-    //}
-    //static public int GetNodeLength()
-    //{
-    //    if (Nodes == null) return 0;
-    //    return Nodes.Length;
-    //}
-
-    //public static Node GetNodeAt(int i)
-    //{
-    //    for(int n=0; n< Nodes.Length; n++)
-    //    {
-    //        if(Nodes[n].ID==i)
-    //        {
-    //            return Nodes[n];
-    //        }
-    //    }
-    //    return null;
-    //}
-
-    //public static Edge GetEdgeAt(int i)
-    //{
-    //    for (int n = 0; n < Edges.Length; n++)
-    //    {
-    //        if (Edges[n].ID == i)
-    //        {
-    //            return Edges[n];
-    //        }
-    //    }
-    //    return null;
-    //}
 
 
     //void ModifyR_Nodes()

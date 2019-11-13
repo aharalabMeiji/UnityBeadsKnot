@@ -51,6 +51,39 @@ public class Knot : MonoBehaviour
         return Bd;
     }
 
+    public Node AddNode(Vector3 pos, int id)
+    {
+        GameObject prefab = Resources.Load<GameObject>("Prefabs/Node");
+        GameObject obj = Node.Instantiate<GameObject>(prefab, Vector3.zero, Quaternion.identity, Nodes.transform);
+        Node nd = obj.GetComponent<Node>();
+        nd.R = new float[4];
+        nd.SetPosition(pos);
+        for (int i = 0; i < 4; i++)
+        {
+            nd.R[i] = 1f;
+        }
+        nd.ID = id;
+        nd.inUse = true;
+        return nd;
+    }
+
+    public Edge AddEdge(int idA, int idB, int ridA, int ridB,int edgeId)
+    {
+        GameObject prefab = Resources.Load<GameObject>("Prefabs/Edge");
+        GameObject obj = Node.Instantiate<GameObject>(prefab, Vector3.zero, Quaternion.identity, Edges.transform);
+        Edge ed = obj.GetComponent<Edge>();
+        ed.ANodeID = idA;
+        ed.ANode = GetNodeByID(idA);
+        ed.ANodeRID = ridA;
+        ed.BNodeID = idB;
+        ed.BNode = GetNodeByID(idB);
+        ed.BNodeRID = ridB;
+        ed.ID = edgeId;
+        ed.inUse = true;
+        return ed;
+    }
+
+
     /// <summary>
     /// 新しくNbhdを作る。
     /// </summary>
@@ -90,7 +123,7 @@ public class Knot : MonoBehaviour
         }
     }
 
-    void ClearAllNodes()
+    public void ClearAllNodes()
     {
         AllNodes = FindObjectsOfType<Node>();
         if (AllNodes.Length == 0) return;
@@ -101,7 +134,7 @@ public class Knot : MonoBehaviour
         }
     }
 
-    void ClearAllEdges()
+    public void ClearAllEdges()
     {
         AllEdges = FindObjectsOfType<Edge>();
         for (int i = AllEdges.Length - 1; i >= 0; i--)
