@@ -252,7 +252,7 @@ public class Knot : MonoBehaviour
     }
 
 
-    void CreateNbhdFromBead()
+    public void CreateNbhdFromBead()
     {
         /// Destroy existing Nbhds
         Nbhd[] AllNbhd = FindObjectsOfType<Nbhd>();
@@ -355,7 +355,19 @@ public class Knot : MonoBehaviour
         return result;
     }
 
-    Vector3 GetBezier(Vector3 v1, Vector3 v2, Vector3 v3, Vector3 v4, float t)
+    public int GetNodeIDFromBeadID(int beadId)
+    {
+        for(int i=0; i<AllNodes.Length; i++)
+        {
+            if(AllNodes[i].ThisBead.ID == beadId)
+            {
+                return AllNodes[i].ID;
+            }
+        }
+        return -1;
+    }
+
+        Vector3 GetBezier(Vector3 v1, Vector3 v2, Vector3 v3, Vector3 v4, float t)
     {
         Vector3 v12 = (1f - t) * v1 + t * v2;
         Vector3 v23 = (1f - t) * v2 + t * v3;
@@ -399,7 +411,7 @@ public class Knot : MonoBehaviour
    /// グラフの形を整える。ただし、これが良いとは限らない。
    /// ビーズに戻して物理モデルで整形するという考えもある。
    /// </summary>
-    void Modify()
+    public void Modify()
     {
         //Nodeのr[]を最適化する
         Debug.Log("Modify starts.");

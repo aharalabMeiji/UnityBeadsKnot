@@ -312,7 +312,7 @@ public class MouseControll : MonoBehaviour {
                                     int m2 = meets[mt].second;
                                     if (Math.Abs(b1 - m1) <= 2 && Math.Abs(b2 - m2) <= 2)
                                     {
-                                        Debug.Log("(" + b1 + "," + b2 + ")=(" + m1 + "," + m2 + ")");
+                                        //Debug.Log("(" + b1 + "," + b2 + ")=(" + m1 + "," + m2 + ")");
                                         OK = false;
                                         break;
                                     }
@@ -421,11 +421,13 @@ public class MouseControll : MonoBehaviour {
                         {
                             for (int r = 0; r < 4; r++)
                             {
-                                PairInt br = thisKnot.FindEndOfEdgeOnBead(bd, 0, true);
+                                PairInt br = thisKnot.FindEndOfEdgeOnBead(bd, r, true);
+                                int nd2 = thisKnot.GetNodeIDFromBeadID(br.first);
                                 if (br.first != -1)
                                 {
-                                    Edge ed = thisKnot.AddEdge(bd.ID, 0, br.first, br.second, edgeID);
+                                    Edge ed = thisKnot.AddEdge(nd.ID, nd2, r,  br.second, edgeID);
                                     edgeID++;
+                                    Debug.Log(nd.ID + "," + r + "," + nd2 + "," + br.second + ":" + edgeID);
                                 }
                             }
                         }
@@ -435,7 +437,12 @@ public class MouseControll : MonoBehaviour {
                     }
                     thisKnot.AllEdges = FindObjectsOfType<Edge>();
                     // 形を整える
+                    thisKnot.GetAllThings();
+                    thisKnot.Modify();
+                    thisKnot.UpdateBeads();
+
                     // Nbhdを作る
+                    thisKnot.CreateNbhdFromBead();
 
                     //モードを戻す
                     Display.SetDrawKnotMode();
