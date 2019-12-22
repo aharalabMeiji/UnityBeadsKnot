@@ -28,11 +28,11 @@ public class Bead : MonoBehaviour {
         SpriteRenderer SR = GetComponent<SpriteRenderer>();
         if(Joint || MidJoint || BandJoint)
         {
-            SR.color = Color.green;
+            //SR.color = Color.green;
         }
         else
         {
-            SR.color = Color.red;
+            //SR.color = Color.red;
         }
         if (!Active)
         {// ５６
