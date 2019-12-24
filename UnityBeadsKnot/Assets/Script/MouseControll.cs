@@ -224,6 +224,7 @@ public class MouseControll : MonoBehaviour {
                     FreeLoop freeloop = FreeLoop.GetComponent<FreeLoop>();
                     freeloop.AddPoint2FreeCurve(MouseDragVec);
                     PreviousPosition = MouseDragVec;
+                    //課題：ジョイントノードの近くを通り過ぎたら、フリーカーブをやめる。
                 }
             }
         }
