@@ -231,7 +231,7 @@ public class MouseControll : MonoBehaviour {
             Vector3 MouseUpVec = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             MouseUpVec.z = 0f;
             if ((MouseUpVec - MouseDownVec).magnitude < 0.05f && DraggedNode.ThisBead.Joint)
-            {// クリック認定
+            {// クリック認定 -> クロシングチェンジ
                 //ビーズのデータの変更
                 Bead bd = DraggedNode.ThisBead;
                 Bead tmp = bd.N1;

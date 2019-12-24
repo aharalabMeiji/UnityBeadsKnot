@@ -6,9 +6,6 @@ public class Menu : MonoBehaviour
 {
     public GameObject MenuBoard;
     // Start is called before the first frame update
-
-    // board : z=-1;
-    // Text  : z=-1.5;
     void Start()
     {
     }
