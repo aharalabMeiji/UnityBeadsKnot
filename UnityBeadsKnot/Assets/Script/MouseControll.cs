@@ -107,19 +107,19 @@ public class MouseControll : MonoBehaviour {
     }
 
     void Update () {
-        if (Input.GetMouseButtonDown(0))
+        if (Input.GetMouseButtonDown(0))// left pressed
         {
             OnMouseDown();
         }
-        if (Input.GetMouseButton(0))
+        if (Input.GetMouseButton(0))// left dragging
         {
             OnMouseDrag();
         }
-        if (Input.GetMouseButtonUp(0))
+        if (Input.GetMouseButtonUp(0))// left released
         {
             OnMouseUp();
         }
-        if (Input.anyKeyDown)
+        if (Input.anyKeyDown)// keyboard
         {
             OnKeyDown();
         }
@@ -156,6 +156,9 @@ public class MouseControll : MonoBehaviour {
         }
     }
 
+    /// <summary>
+    /// left button dragged
+    /// </summary>
     public void OnMouseDrag()
     {
         MouseDragVec = Camera.main.ScreenToWorldPoint(Input.mousePosition);
@@ -442,7 +445,7 @@ public class MouseControll : MonoBehaviour {
                     thisKnot.UpdateBeads();
 
                     // Nbhdを作る
-                    thisKnot.CreateNbhdFromBead();
+                    thisKnot.AdjustEdgeLine();
 
                     //モードを戻す
                     Display.SetDrawKnotMode();

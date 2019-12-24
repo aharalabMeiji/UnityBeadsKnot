@@ -34,7 +34,7 @@ public class Bead : MonoBehaviour {
         else
         {
             gameObject.transform.localScale = new Vector3(0.04f, 0.04f, 1f);
-            SR.color = Color.red;
+            SR.color = new Color(0.9f,0.9f,0.9f);
         }
         if (!Active)
         {// ５６
