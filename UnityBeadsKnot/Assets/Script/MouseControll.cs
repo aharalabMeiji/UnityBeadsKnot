@@ -464,9 +464,6 @@ public class MouseControll : MonoBehaviour {
     }
 
 
-
-
-
     //void ModifyR_Nodes()
     //{
 
@@ -500,10 +497,13 @@ public class MouseControll : MonoBehaviour {
         else if (Input.GetKeyDown(KeyCode.N))
         {
             KeyCodeN();
+            thisMenu.HideMenu();
+            Display.SetDrawKnotMode();
         }
         else if (Input.GetKeyDown(KeyCode.O))
         {
             KeyCodeO();
+            //thisMenu.HideMenu();
         }
     }
 
