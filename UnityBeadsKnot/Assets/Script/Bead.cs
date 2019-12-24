@@ -10,7 +10,7 @@ public class Bead : MonoBehaviour {
     public Bead N1, U1, N2, U2;
     public int NumOfNbhd; // Nbhdの数
 
-    public bool Joint, MidJoint, NearJoint, BandJoint;
+    public bool Joint = false, MidJoint = false, NearJoint = false, BandJoint = false;
     public bool Active = true;
 
     // Use this for initialization
@@ -28,11 +28,13 @@ public class Bead : MonoBehaviour {
         SpriteRenderer SR = GetComponent<SpriteRenderer>();
         if(Joint || MidJoint || BandJoint)
         {
-            //SR.color = Color.green;
+            gameObject.transform.localScale = new Vector3(0.06f, 0.06f, 1f);
+            SR.color = Color.green;
         }
         else
         {
-            //SR.color = Color.red;
+            gameObject.transform.localScale = new Vector3(0.04f, 0.04f, 1f);
+            SR.color = new Color(0.9f,0.9f,0.9f);
         }
         if (!Active)
         {// ５６

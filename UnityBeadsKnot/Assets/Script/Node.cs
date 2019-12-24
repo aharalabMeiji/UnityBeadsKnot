@@ -7,7 +7,7 @@ public class Node : MonoBehaviour {
     public Vector3 Position;
     public float Theta;
     public float[] R;
-    public int[] EdgeID;//Edge型？
+    //public int[] EdgeID;//Edge型？
 
     public Bead ThisBead;// Bead型
     public bool inUse;

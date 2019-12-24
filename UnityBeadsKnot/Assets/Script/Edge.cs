@@ -14,8 +14,9 @@ public class Edge : MonoBehaviour
     public int BNodeRID;
     public int ID;
 
-    private int BeadsNumber;
-    private List<Bead> Beads; 
+    //private int BeadsNumber;
+    //private List<Bead> Beads; 
+    public Knot ParentKnot;
 
     public Node ANode, BNode;//ANodeID, BNodeID に依存する。
     private Vector3 V1, V2, V3, V4;
@@ -28,8 +29,8 @@ public class Edge : MonoBehaviour
     // Use this for initialization
     void Start()
     {
-        BeadsNumber = 0;
-        Beads = new List<Bead>();
+        //BeadsNumber = 0;
+        //Beads = new List<Bead>();
         inUse = true;
     }
 
@@ -291,5 +292,62 @@ public class Edge : MonoBehaviour
 
     }
 
+    public void AdjustLineRenderer()
+    {
+        LineRenderer LR = gameObject.GetComponent<LineRenderer>();
+        //Debug.Log("AdjustLineRenderer()");
+        //Debug.Log(ParentKnot);
+        Node ANode = ParentKnot.GetNodeByID(ANodeID);
+        Node BNode = ParentKnot.GetNodeByID(BNodeID);
 
+        //if (!ANode.inUse || !BNode.inUse) return;
+        Bead ABead = ANode.ThisBead;
+        Bead BBead = BNode.ThisBead;
+        List<Vector3> Positions = new List<Vector3>();
+        if (ANodeRID == 0 || ANodeRID == 2)
+            Positions.Add(ABead.Position);
+        Bead Prev = ABead;
+        Bead Now = ABead.GetNU12(ANodeRID);
+        if (Now == null)
+        {
+            LR.positionCount = 0;// 失敗
+        }
+        Bead Next = null;
+        int MaxRepeat = ParentKnot.AllBeads.Length;
+        //以降は基本的にN1,N2しか見ない。
+        for (int repeat = 0; repeat < MaxRepeat; repeat++)
+        {
+            if (Now.N1 == Prev || Now.N1.ID == Prev.ID)//IDベースですすめる。
+            {
+                Next = Now.N2;
+            }
+            else if (Now.N2 == Prev || Now.N2.ID == Prev.ID)
+            {
+                Next = Now.N1;
+            }
+            else
+            {
+                Debug.Log("error in AdjustLineRenderer() : " + repeat+" "+ Now.N1.ID+" "+ Now.N2.ID);
+                break;
+            }
+            Positions.Add(Now.Position);
+            Prev = Now;
+            Now = Next;
+            if (Now.Joint || Now.MidJoint)
+            {
+                if (BNodeRID == 0 || BNodeRID == 2)
+                {
+                    Positions.Add(Now.Position);
+                }
+                break;
+            }
+        }
+        // LineRendererにデータを流し込む。
+        LR.positionCount = Positions.Count;
+        for (int count = 0; count < Positions.Count; count++)
+        {
+            LR.SetPosition(count, Positions[count]);
+        }
+
+    }
 }

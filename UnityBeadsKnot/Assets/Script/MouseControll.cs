@@ -23,6 +23,10 @@ public class Display
 {
     private static int Mode=1;
 
+    public static int GetMode()
+    {
+        return Mode;
+    }
     public static bool IsMenuMode()
     {
         return (Mode == 0);
@@ -107,19 +111,19 @@ public class MouseControll : MonoBehaviour {
     }
 
     void Update () {
-        if (Input.GetMouseButtonDown(0))
+        if (Input.GetMouseButtonDown(0))// left pressed
         {
             OnMouseDown();
         }
-        if (Input.GetMouseButton(0))
+        if (Input.GetMouseButton(0))// left dragging
         {
             OnMouseDrag();
         }
-        if (Input.GetMouseButtonUp(0))
+        if (Input.GetMouseButtonUp(0))// left released
         {
             OnMouseUp();
         }
-        if (Input.anyKeyDown)
+        if (Input.anyKeyDown)// keyboard
         {
             OnKeyDown();
         }
@@ -156,6 +160,9 @@ public class MouseControll : MonoBehaviour {
         }
     }
 
+    /// <summary>
+    /// left button dragged
+    /// </summary>
     public void OnMouseDrag()
     {
         MouseDragVec = Camera.main.ScreenToWorldPoint(Input.mousePosition);
@@ -190,7 +197,7 @@ public class MouseControll : MonoBehaviour {
                 // thisKnot.UpdateNodeRotation();
             }
         }
-        else if (Display.IsFreeLoopMode())
+        else if (Display.IsFreeLoopMode())//フリーループモード、ドラッグ中
         {
             if((PreviousPosition - MouseDragVec).magnitude > 0.1f)
                 // 未解決 // だいたい同じ方向を向いている、という条件も付けるか？
@@ -221,6 +228,39 @@ public class MouseControll : MonoBehaviour {
     {
         if (Display.IsDrawKnotMode())
         {
+            Vector3 MouseUpVec = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            MouseUpVec.z = 0f;
+            if ((MouseUpVec - MouseDownVec).magnitude < 0.05f && DraggedNode.ThisBead.Joint)
+            {// クリック認定
+                //ビーズのデータの変更
+                Bead bd = DraggedNode.ThisBead;
+                Bead tmp = bd.N1;
+                bd.N1 = bd.U2;
+                bd.U2 = bd.N2;
+                bd.N2 = bd.U1;
+                bd.U1 = tmp;
+                //ノードのデータの変更
+                DraggedNode.Theta -= Mathf.PI / 2f;
+                float rtmp = DraggedNode.R[0];
+                DraggedNode.R[0] = DraggedNode.R[3];
+                DraggedNode.R[3] = DraggedNode.R[2];
+                DraggedNode.R[2] = DraggedNode.R[1];
+                DraggedNode.R[1] = rtmp;
+                //エッジのデータの変更
+                Edge[] AllEdges = FindObjectsOfType<Edge>();
+                for(int e=0; e<AllEdges.Length; e++)
+                {
+                    Edge ed = AllEdges[e];
+                    if(ed.ANodeID == DraggedNode.ID)
+                    {
+                        ed.ANodeRID = (ed.ANodeRID + 1) % 4; 
+                    }
+                    else if(ed.BNodeID == DraggedNode.ID)
+                    {
+                        ed.BNodeRID = (ed.BNodeRID + 1) % 4;
+                    }
+                }
+            }
             DraggedNode = null;
         }
         else if (Display.IsFreeLoopMode())
@@ -231,6 +271,7 @@ public class MouseControll : MonoBehaviour {
             {
                 freeloop.FreeCurve.Clear();
                 Display.SetDrawKnotMode();
+                // フリーループモードから抜けたことが直感的にわかりにくい。
             }
             else //
             {
@@ -242,7 +283,7 @@ public class MouseControll : MonoBehaviour {
                 for (int b = 0; b < freeCurveSize; b++)
                 {
                     //ビーズを追加(b=ID番号)
-                    thisKnot.AddBead(freeloop.FreeCurve[b],b);
+                    thisKnot.AddBead(freeloop.FreeCurve[b], b);
                 }
                 thisKnot.AllBeads = FindObjectsOfType<Bead>();
                 freeCurveSize = thisKnot.AllBeads.Length;// おそらく無意味
@@ -342,8 +383,24 @@ public class MouseControll : MonoBehaviour {
                         bd1.Joint = true;
                         //Nbhdの繋ぎ替え
                         // これをどちらにどちらをつなぐかは、選ぶ必要がある。
-                        bd1.U1 = bd2.N1;
-                        bd1.U2 = bd2.N2;
+                        float bd1x = bd1.Position.x;
+                        float bd1y = bd1.Position.y;
+                        float n1x = bd1.N1.Position.x - bd1x;
+                        float n1y = bd1.N1.Position.y - bd1y;
+                        float bd2n1x = bd2.N1.Position.x - bd1x;
+                        float bd2n1y = bd2.N1.Position.y - bd1y;
+                        float bd2n2x = bd2.N2.Position.x - bd1x;
+                        float bd2n2y = bd2.N2.Position.y - bd1y;
+                        if(n1x * bd2n1y - n1y * bd2n1x > 0 && n1x * bd2n2y - n1y * bd2n2x < 0)
+                        {
+                            bd1.U1 = bd2.N1;
+                            bd1.U2 = bd2.N2;
+                        }
+                        else
+                        {
+                            bd1.U1 = bd2.N2;
+                            bd1.U2 = bd2.N1;
+                        }
                         thisKnot.AllBeads[b2 - 1].N1 = bd1;
                         thisKnot.AllBeads[b2 + 1].N2 = bd1;
                         //消去
@@ -391,7 +448,9 @@ public class MouseControll : MonoBehaviour {
                             Node nd = thisKnot.AddNode(bd.Position,nodeID);
                             nodeID++;
                             nd.ThisBead = bd;
-                            nd.Theta = 0f;  //ここでできるだけ計算する
+                            float n1x = bd.N1.Position.x - bd.Position.x;
+                            float n1y = bd.N1.Position.y - bd.Position.y;
+                            nd.Theta = Mathf.Atan2(n1y, n1x);  //ここでできるだけ計算する
                         }
                     }
                     // AllBeadsからMidJointだけを取り出してNodeにする。（以上で通し番号をつける）
@@ -404,7 +463,9 @@ public class MouseControll : MonoBehaviour {
                             Node nd = thisKnot.AddNode(bd.Position, nodeID);
                             nodeID++;
                             nd.ThisBead = bd;
-                            nd.Theta = 0f;  //ここでできるだけ計算する
+                            float n1x = bd.N1.Position.x - bd.Position.x;
+                            float n1y = bd.N1.Position.y - bd.Position.y;
+                            nd.Theta = Mathf.Atan2(n1y, n1x);  //ここでできるだけ計算する
                         }
                     }
                     thisKnot.AllNodes = FindObjectsOfType<Node>();
@@ -442,7 +503,7 @@ public class MouseControll : MonoBehaviour {
                     thisKnot.UpdateBeads();
 
                     // Nbhdを作る
-                    thisKnot.CreateNbhdFromBead();
+                    thisKnot.AdjustEdgeLine();
 
                     //モードを戻す
                     Display.SetDrawKnotMode();
@@ -459,9 +520,6 @@ public class MouseControll : MonoBehaviour {
 
         }
     }
-
-
-
 
 
     //void ModifyR_Nodes()
@@ -501,6 +559,8 @@ public class MouseControll : MonoBehaviour {
         else if (Input.GetKeyDown(KeyCode.O))
         {
             KeyCodeO();
+            thisMenu.HideMenu();
+            Display.SetDrawKnotMode();
         }
     }
 
@@ -511,6 +571,7 @@ public class MouseControll : MonoBehaviour {
         thisKnot.ClearAll();
         // マウスドラッグで一本線を入力するモードに入る
         Display.SetFreeLoopMode();
+        Debug.Log("FreeLoopMode()");
         // Mode.
         //　閉じるような曲線の入力を受け付ける
         //　点列から交点を抽出

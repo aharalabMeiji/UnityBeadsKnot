@@ -80,21 +80,14 @@ public class Knot : MonoBehaviour
         ed.BNodeRID = ridB;
         ed.ID = edgeId;
         ed.inUse = true;
+        ed.ParentKnot = this;
         return ed;
     }
 
 
     /// <summary>
-    /// 新しくNbhdを作る。
+    /// 画面からはみ出ないように位置を整える。
     /// </summary>
-    /// <returns></returns>
-    Nbhd AddNewNbhd()
-    {
-        GameObject prefab = Resources.Load<GameObject>("Prefabs/Nbhd");
-        GameObject obj = Instantiate(prefab, Nbhds.transform);
-        return obj.GetComponent<Nbhd>();
-    }
-
     void AdjustDisplay()
     {
         float l = 0, t = 0, r = 0, b = 0;
@@ -121,6 +114,14 @@ public class Knot : MonoBehaviour
             bd.Position.x += dx;
             bd.Position.y += dy;
         }
+        AllEdges = FindObjectsOfType<Edge>();
+        for (int i = 0; i < AllEdges.Length; i++)
+        {
+            Edge ed = AllEdges[i];
+            ed.AdjustLineRenderer();
+        }
+
+
     }
 
     public void ClearAllNodes()
@@ -197,6 +198,7 @@ public class Knot : MonoBehaviour
             ed.BNodeRID = edges[n,3];
             ed.ANode = GetNodeByID(ed.ANodeID);
             ed.BNode = GetNodeByID(ed.BNodeID);
+            ed.ParentKnot = this;
             if (ed.ANode == null || ed.BNode == null) break;// たぶんこれはない。
             Bead ABead = ed.ANode.ThisBead;
             Bead BBead = ed.BNode.ThisBead;
@@ -212,29 +214,40 @@ public class Knot : MonoBehaviour
         }
         for (int n = 0; n < nodesSize; n++)
         {
-            Bead bd = GetNodeByID(n).ThisBead;
-            for(int i=0; i<4; i++) { 
-            if(bd.GetNU12(0) != null)
+            Node node = GetNodeByID(n);
+            if (node == null) continue;
+            Bead bd = node.ThisBead;
+            if (bd == null) continue;
+            bd.NumOfNbhd = 0;
+            for (int i = 0; i < 4; i++)
             {
-                bd.NumOfNbhd++;
+                if (bd.GetNU12(i) != null)
+                {
+                    bd.NumOfNbhd++;
+                }
             }
-            }
-            if(bd.NumOfNbhd == 2)
+            if (bd.NumOfNbhd == 2)
             {
-                bd.MidJoint = true;
+                node.MidJoint = bd.MidJoint = true;
+                node.BandJoint = bd.BandJoint = false;
+                node.Joint = bd.Joint = false;
             }
             else if (bd.NumOfNbhd == 3)
             {
-                bd.BandJoint = true;
+                node.MidJoint = bd.MidJoint = false;
+                node.BandJoint = bd.BandJoint = true;
+                node.Joint = bd.Joint = false;
             }
             else if (bd.NumOfNbhd == 4)
             {
-                bd.Joint = true;
+                node.MidJoint = bd.MidJoint = false;
+                node.BandJoint = bd.BandJoint = false;
+                node.Joint = bd.Joint = true;
             }
             else if (bd.NumOfNbhd == 0)
             {
                 Debug.Log("Num " + n + " is not in use.");
-                GetNodeByID(n).inUse = false ;
+                GetNodeByID(n).inUse = false;
                 bd.gameObject.SetActive(false);
 
             }
@@ -248,63 +261,22 @@ public class Knot : MonoBehaviour
         //  CloseJointの設定を行う（マストではない）            
         //graph.add_close_point_Joint();
         //            Draw.beads();// drawモードの変更
-        CreateNbhdFromBead();
+        AdjustEdgeLine();
     }
 
-
-    public void CreateNbhdFromBead()
+    /// <summary>
+    /// Beads列から「結ぶ線」を構成する。
+    /// ただし、EdgeのLineRendererを用いる。
+    /// </summary>
+    public void AdjustEdgeLine()
     {
-        /// Destroy existing Nbhds
-        Nbhd[] AllNbhd = FindObjectsOfType<Nbhd>();
-        for(int i=AllNbhd.Length-1; i>=0; i--)
-        {
-            Destroy(AllNbhd[i].gameObject);
-        }
-        /// Create new ones
-        AllBeads = FindObjectsOfType<Bead>();
-        for (int i=0; i<AllBeads.Length; i++)
-        {
-            Bead bd = AllBeads[i];
-            //Debug.Log("CreateNbhdFromBead()");
-            if (bd.Joint)
-            {
-                for (int j = 0; j < 4; j++)
-                {
-                    Bead nextBd = bd.GetNU12(j);
-                    if (nextBd != null)
-                    {
-                        if (bd.ID < nextBd.ID)
-                        {
-                            Nbhd nbhd = AddNewNbhd();
-                            nbhd.ABead = bd;
-                            nbhd.BBead = nextBd;
-                            nbhd.ID = i * 4 + j;
-                            nbhd.AID = bd.ID;
-                            nbhd.BID = nextBd.ID;
-                        }
-                    }
-                }
-            }
-            else
-            {
-                for(int j=0; j<4; j++){
-                    Bead nextBd = bd.GetNU12(j);
-                    if ( nextBd != null)
-                    {
-                        if(bd.ID < nextBd.ID)
-                        {
-                            Nbhd nbhd = AddNewNbhd();
-                            nbhd.ABead = bd;
-                            nbhd.BBead = nextBd;
-                            nbhd.ID = i * 4 + j;
-                            nbhd.AID = bd.ID;
-                            nbhd.BID = nextBd.ID;
-                        }
-                    }
-                }
-            }
-        }
 
+        AllEdges = FindObjectsOfType<Edge>();
+        for (int i=0; i<AllEdges.Length; i++)
+        {
+            Edge ed = AllEdges[i];
+            ed.AdjustLineRenderer();
+        }
     }
 
     /// <summary>
@@ -317,7 +289,7 @@ public class Knot : MonoBehaviour
         AllBeads = this.GetComponentsInChildren<Bead>();
     }
 
-    Bead GetBeadByID(int id)
+    public Bead GetBeadByID(int id)
     {
         for(int i=0; i<AllBeads.Length; i++)
         {
@@ -575,7 +547,7 @@ public class Knot : MonoBehaviour
 
         }
         AllBeads = FindObjectsOfType<Bead>();
-        CreateNbhdFromBead();
+        AdjustEdgeLine();
     }
 
     /// <summary>
@@ -662,7 +634,7 @@ public class Knot : MonoBehaviour
                                 bd.Active = true;
                                 CountBeads++;
                             }
-//                            AllNodes = FindObjectsOfType<Node>();
+//                          AllNodes = FindObjectsOfType<Node>();
                             AllNodes = Nodes.GetComponentsInChildren<Node>();
                             Debug.Log("AllNodes.Length = "+AllNodes.Length);
                         }
@@ -691,6 +663,7 @@ public class Knot : MonoBehaviour
                                 ed.BNodeRID = bRID;
                                 ed.ANode = GetNodeByID(ed.ANodeID);
                                 ed.BNode = GetNodeByID(ed.BNodeID);
+                                ed.ParentKnot = this;
                                 if (ed.ANode == null || ed.BNode == null)
                                 {
                                     break;// たぶんこれはない。
@@ -717,7 +690,8 @@ public class Knot : MonoBehaviour
                                 if (node == null) continue;
                                 Bead bd = node.ThisBead;
                                 if (bd == null) continue;
-                                //Debug.Log(bd.ID + "/" + AllNodes.Length+":"+bd.N1.ID+","+bd.N2.ID);
+                                Debug.Log(bd.ID + "/" + AllNodes.Length+":"+bd.N1.ID+","+bd.N2.ID);
+                                bd.NumOfNbhd = 0;
                                 for (int i = 0; i < 4; i++)
                                 {
                                     if (bd.GetNU12(i) != null)
@@ -727,15 +701,21 @@ public class Knot : MonoBehaviour
                                 }
                                 if (bd.NumOfNbhd == 2)
                                 {
-                                    bd.MidJoint = true;
+                                    node.MidJoint = bd.MidJoint = true;
+                                    node.BandJoint = bd.BandJoint = false;
+                                    node.Joint = bd.Joint = false;
                                 }
                                 else if (bd.NumOfNbhd == 3)
                                 {
-                                    bd.BandJoint = true;
+                                    node.MidJoint = bd.MidJoint = false;
+                                    node.BandJoint = bd.BandJoint = true;
+                                    node.Joint = bd.Joint = false;
                                 }
                                 else if (bd.NumOfNbhd == 4)
                                 {
-                                    bd.Joint = true;
+                                    node.MidJoint = bd.MidJoint = false;
+                                    node.BandJoint = bd.BandJoint = false;
+                                    node.Joint = bd.Joint = true;
                                 }
                                 else if (bd.NumOfNbhd == 0)
                                 {
@@ -753,7 +733,7 @@ public class Knot : MonoBehaviour
                             //  CloseJointの設定を行う（マストではない）            
                             //graph.add_close_point_Joint();
                             //            Draw.beads();// drawモードの変更
-                            CreateNbhdFromBead();
+                            AdjustEdgeLine();
                         }
 
                     }
