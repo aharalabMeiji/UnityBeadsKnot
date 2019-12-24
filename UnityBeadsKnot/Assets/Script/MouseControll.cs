@@ -98,6 +98,9 @@ public class MouseControll : MonoBehaviour {
     Vector3 DraggedNodeStartPosition;
     Vector3 PreviousPosition;
 
+    Vector3 StartFreeCurve;
+    Bead StartFreeCurveBead;
+    
     public static bool ModifyNode = true;
     public static bool ModifyBeads = false;
     public static bool DisplayEdgeLineRenderer = true;
@@ -138,16 +141,32 @@ public class MouseControll : MonoBehaviour {
         if (Display.IsDrawKnotMode()) { 
             thisKnot = ThisKnot.GetComponent<Knot>();
             thisKnot.GetAllThings();
-        
+            //ノード上をクリックしているかどうかをチェック 
+            DraggedNode = null;
             for(int n=0; n<thisKnot.AllNodes.Length; n++)
             {
                 float dist = (MouseDownVec - thisKnot.AllNodes[n].Position).magnitude;
-                if(dist < 0.25){
+                if(dist < 0.25f){
                     DraggedNode = thisKnot.AllNodes[n];
                     DraggedNodeStartPosition = thisKnot.AllNodes[n].Position;
                     return;
                 }
             }
+            //ビーズ（ノード以外）をクリックしているかどうかをチェック
+            StartFreeCurveBead = null;
+            for(int n=0; n<thisKnot.AllBeads.Length; n++)
+            {
+                //ノードを見つけたらreturn 
+                if ((MouseDownVec - thisKnot.AllBeads[n].Position).magnitude < 0.25f)
+                {
+                    StartFreeCurve = thisKnot.AllBeads[n].Position;
+                    StartFreeCurveBead = thisKnot.AllBeads[n];
+                    FreeLoop.GetComponent<FreeLoop>().AddPoint2FreeCurve(MouseDownVec);
+                    PreviousPosition = MouseDownVec;
+                    return;
+                }
+            }
+
         }
         else if (Display.IsFreeLoopMode())
         {
@@ -167,8 +186,9 @@ public class MouseControll : MonoBehaviour {
     {
         MouseDragVec = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         MouseDragVec.z = 0f;
-        if (Display.IsDrawKnotMode())
+        if (Display.IsDrawKnotMode())//通常モードドラッグ中
         {
+            //ノードをドラッグしているとき
             if (DraggedNode != null)
             {
                 float minDist = (MouseDragVec - DraggedNodeStartPosition).magnitude;
@@ -195,6 +215,16 @@ public class MouseControll : MonoBehaviour {
                 thisKnot.UpdateBeadsAtNode(DraggedNode);
                 // ドラッグしているノードについて、回転して適正な位置にする。
                 // thisKnot.UpdateNodeRotation();
+            }
+            //フリーカーブを描いているとき
+            else if (StartFreeCurveBead != null)
+            {
+                if ((PreviousPosition - MouseDragVec).magnitude > 0.1f)
+                {//少し進んだら点を追加。
+                    FreeLoop freeloop = FreeLoop.GetComponent<FreeLoop>();
+                    freeloop.AddPoint2FreeCurve(MouseDragVec);
+                    PreviousPosition = MouseDragVec;
+                }
             }
         }
         else if (Display.IsFreeLoopMode())//フリーループモード、ドラッグ中
@@ -226,42 +256,92 @@ public class MouseControll : MonoBehaviour {
 
     public void OnMouseUp()
     {
+        Vector3 MouseUpVec = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        MouseUpVec.z = 0f;
         if (Display.IsDrawKnotMode())
         {
-            Vector3 MouseUpVec = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            MouseUpVec.z = 0f;
-            if ((MouseUpVec - MouseDownVec).magnitude < 0.05f && DraggedNode.ThisBead.Joint)
-            {// クリック認定 -> クロシングチェンジ
-                //ビーズのデータの変更
-                Bead bd = DraggedNode.ThisBead;
-                Bead tmp = bd.N1;
-                bd.N1 = bd.U2;
-                bd.U2 = bd.N2;
-                bd.N2 = bd.U1;
-                bd.U1 = tmp;
-                //ノードのデータの変更
-                DraggedNode.Theta -= Mathf.PI / 2f;
-                float rtmp = DraggedNode.R[0];
-                DraggedNode.R[0] = DraggedNode.R[3];
-                DraggedNode.R[3] = DraggedNode.R[2];
-                DraggedNode.R[2] = DraggedNode.R[1];
-                DraggedNode.R[1] = rtmp;
-                //エッジのデータの変更
-                Edge[] AllEdges = FindObjectsOfType<Edge>();
-                for(int e=0; e<AllEdges.Length; e++)
-                {
-                    Edge ed = AllEdges[e];
-                    if(ed.ANodeID == DraggedNode.ID)
+            if (DraggedNode != null)
+            {
+                if ((MouseUpVec - MouseDownVec).magnitude < 0.05f && DraggedNode.ThisBead.Joint)
+                {// クリック認定 -> クロシングチェンジ
+                 //ビーズのデータの変更
+                    Bead bd = DraggedNode.ThisBead;
+                    Bead tmp = bd.N1;
+                    bd.N1 = bd.U2;
+                    bd.U2 = bd.N2;
+                    bd.N2 = bd.U1;
+                    bd.U1 = tmp;
+                    //ノードのデータの変更
+                    DraggedNode.Theta -= Mathf.PI / 2f;
+                    float rtmp = DraggedNode.R[0];
+                    DraggedNode.R[0] = DraggedNode.R[3];
+                    DraggedNode.R[3] = DraggedNode.R[2];
+                    DraggedNode.R[2] = DraggedNode.R[1];
+                    DraggedNode.R[1] = rtmp;
+                    //エッジのデータの変更
+                    Edge[] AllEdges = FindObjectsOfType<Edge>();
+                    for (int e = 0; e < AllEdges.Length; e++)
                     {
-                        ed.ANodeRID = (ed.ANodeRID + 1) % 4; 
-                    }
-                    else if(ed.BNodeID == DraggedNode.ID)
-                    {
-                        ed.BNodeRID = (ed.BNodeRID + 1) % 4;
+                        Edge ed = AllEdges[e];
+                        if (ed.ANodeID == DraggedNode.ID)
+                        {
+                            ed.ANodeRID = (ed.ANodeRID + 1) % 4;
+                        }
+                        else if (ed.BNodeID == DraggedNode.ID)
+                        {
+                            ed.BNodeRID = (ed.BNodeRID + 1) % 4;
+                        }
                     }
                 }
+                DraggedNode = null;
             }
-            DraggedNode = null;
+            // フリーカーブを描いているとき
+            else if (StartFreeCurveBead != null)
+            {
+                //終了地点がノードでないことが要件
+                bool NoProc = false;
+                //終了地点がノードだったら、非処理フラグを立てる
+                thisKnot.GetAllThings();
+                for(int n=0; n<thisKnot.AllNodes.Length; n++)
+                {
+                    if((thisKnot.AllNodes[n].Position - MouseUpVec).magnitude < 0.2f)
+                    {
+                        NoProc = true;
+                    }
+                }
+                //終了地点がビーズだったら、処理に入る。
+                //終了地点がビーズでなかったら、非処理フラグを立てる
+                if (!NoProc)
+                {
+                    NoProc = true;
+                    for(int b=0; b<thisKnot.AllBeads.Length; b++)
+                    {
+                        if((thisKnot.AllBeads[b].Position - MouseUpVec).magnitude < 0.2f)
+                        {
+                            NoProc = false;
+                            break;
+                        }
+                    }
+                }
+                //非処理フラグが立っていたらフリーカーブを消去して終わり
+                if (NoProc)
+                {
+                    FreeLoop freeloop = FreeLoop.GetComponent<FreeLoop>();
+                    freeloop.FreeCurve.Clear();
+                }
+                else// 処理に入る
+                {
+                    // 終了ビーズを記録
+                    // 開始ビーズから終了ビーズをたどる方法を探索
+                    // 開始ビーズから終了ビーズの間にクロシングがどのように表れるかを調査。
+                    // オーバーのみ、またはアンダーのみの時には処理を開始
+                    //　開始ビーズから終了ビーズまでの既存のビーズラインを消去
+                    // フリーループにあたる部分をビーズへと変換
+                    // 旧フリーループと旧ビーズとの交点を探してジョイントにする。
+                    // グラフ構造を書き換える
+                    // 形を整える
+                }
+            }
         }
         else if (Display.IsFreeLoopMode())
         {
@@ -275,6 +355,7 @@ public class MouseControll : MonoBehaviour {
             }
             else //
             {
+                //以下は長い処理なので、メソッド化が望ましい。
                 //スタート地点に近い場所で終わった場合は、まずはBeadへと変換する。
                 // すべてのビーズを消す（不要）
                 thisKnot.ClearAll();
