@@ -23,6 +23,10 @@ public class Display
 {
     private static int Mode=1;
 
+    public static int GetMode()
+    {
+        return Mode;
+    }
     public static bool IsMenuMode()
     {
         return (Mode == 0);
@@ -131,6 +135,7 @@ public class MouseControll : MonoBehaviour {
         MouseDownVec = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         MouseDownVec.z = 0f;
         //Debug.Log(MouseDownVec);
+        Debug.Log("Here comes "+Display.GetMode());
         if (Display.IsDrawKnotMode()) { 
             thisKnot = ThisKnot.GetComponent<Knot>();
             thisKnot.GetAllThings();
@@ -193,7 +198,7 @@ public class MouseControll : MonoBehaviour {
                 // thisKnot.UpdateNodeRotation();
             }
         }
-        else if (Display.IsFreeLoopMode())
+        else if (Display.IsFreeLoopMode())//フリーループモード、ドラッグ中
         {
             if((PreviousPosition - MouseDragVec).magnitude > 0.1f)
                 // 未解決 // だいたい同じ方向を向いている、という条件も付けるか？
@@ -497,13 +502,12 @@ public class MouseControll : MonoBehaviour {
         else if (Input.GetKeyDown(KeyCode.N))
         {
             KeyCodeN();
-            thisMenu.HideMenu();
-            Display.SetDrawKnotMode();
         }
         else if (Input.GetKeyDown(KeyCode.O))
         {
             KeyCodeO();
-            //thisMenu.HideMenu();
+            thisMenu.HideMenu();
+            Display.SetDrawKnotMode();
         }
     }
 
@@ -514,6 +518,7 @@ public class MouseControll : MonoBehaviour {
         thisKnot.ClearAll();
         // マウスドラッグで一本線を入力するモードに入る
         Display.SetFreeLoopMode();
+        Debug.Log("FreeLoopMode()");
         // Mode.
         //　閉じるような曲線の入力を受け付ける
         //　点列から交点を抽出
