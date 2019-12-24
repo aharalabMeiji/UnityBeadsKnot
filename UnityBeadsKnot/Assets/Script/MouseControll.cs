@@ -239,6 +239,7 @@ public class MouseControll : MonoBehaviour {
             {
                 freeloop.FreeCurve.Clear();
                 Display.SetDrawKnotMode();
+                // フリーループモードから抜けたことが直感的にわかりにくい。
             }
             else //
             {
@@ -250,7 +251,7 @@ public class MouseControll : MonoBehaviour {
                 for (int b = 0; b < freeCurveSize; b++)
                 {
                     //ビーズを追加(b=ID番号)
-                    thisKnot.AddBead(freeloop.FreeCurve[b],b);
+                    thisKnot.AddBead(freeloop.FreeCurve[b], b);
                 }
                 thisKnot.AllBeads = FindObjectsOfType<Bead>();
                 freeCurveSize = thisKnot.AllBeads.Length;// おそらく無意味
@@ -350,8 +351,24 @@ public class MouseControll : MonoBehaviour {
                         bd1.Joint = true;
                         //Nbhdの繋ぎ替え
                         // これをどちらにどちらをつなぐかは、選ぶ必要がある。
-                        bd1.U1 = bd2.N1;
-                        bd1.U2 = bd2.N2;
+                        float bd1x = bd1.Position.x;
+                        float bd1y = bd1.Position.y;
+                        float n1x = bd1.N1.Position.x - bd1x;
+                        float n1y = bd1.N1.Position.y - bd1y;
+                        float bd2n1x = bd2.N1.Position.x - bd1x;
+                        float bd2n1y = bd2.N1.Position.y - bd1y;
+                        float bd2n2x = bd2.N2.Position.x - bd1x;
+                        float bd2n2y = bd2.N2.Position.y - bd1y;
+                        if(n1x * bd2n1y - n1y * bd2n1x > 0 && n1x * bd2n2y - n1y * bd2n2x < 0)
+                        {
+                            bd1.U1 = bd2.N1;
+                            bd1.U2 = bd2.N2;
+                        }
+                        else
+                        {
+                            bd1.U1 = bd2.N2;
+                            bd1.U2 = bd2.N1;
+                        }
                         thisKnot.AllBeads[b2 - 1].N1 = bd1;
                         thisKnot.AllBeads[b2 + 1].N2 = bd1;
                         //消去
@@ -399,7 +416,9 @@ public class MouseControll : MonoBehaviour {
                             Node nd = thisKnot.AddNode(bd.Position,nodeID);
                             nodeID++;
                             nd.ThisBead = bd;
-                            nd.Theta = 0f;  //ここでできるだけ計算する
+                            float n1x = bd.N1.Position.x - bd.Position.x;
+                            float n1y = bd.N1.Position.y - bd.Position.y;
+                            nd.Theta = Mathf.Atan2(n1y, n1x);  //ここでできるだけ計算する
                         }
                     }
                     // AllBeadsからMidJointだけを取り出してNodeにする。（以上で通し番号をつける）
@@ -412,7 +431,9 @@ public class MouseControll : MonoBehaviour {
                             Node nd = thisKnot.AddNode(bd.Position, nodeID);
                             nodeID++;
                             nd.ThisBead = bd;
-                            nd.Theta = 0f;  //ここでできるだけ計算する
+                            float n1x = bd.N1.Position.x - bd.Position.x;
+                            float n1y = bd.N1.Position.y - bd.Position.y;
+                            nd.Theta = Mathf.Atan2(n1y, n1x);  //ここでできるだけ計算する
                         }
                     }
                     thisKnot.AllNodes = FindObjectsOfType<Node>();
