@@ -135,7 +135,6 @@ public class MouseControll : MonoBehaviour {
         MouseDownVec = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         MouseDownVec.z = 0f;
         //Debug.Log(MouseDownVec);
-        Debug.Log("Here comes "+Display.GetMode());
         if (Display.IsDrawKnotMode()) { 
             thisKnot = ThisKnot.GetComponent<Knot>();
             thisKnot.GetAllThings();
@@ -229,6 +228,39 @@ public class MouseControll : MonoBehaviour {
     {
         if (Display.IsDrawKnotMode())
         {
+            Vector3 MouseUpVec = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            MouseUpVec.z = 0f;
+            if ((MouseUpVec - MouseDownVec).magnitude < 0.05f && DraggedNode.ThisBead.Joint)
+            {// クリック認定
+                //ビーズのデータの変更
+                Bead bd = DraggedNode.ThisBead;
+                Bead tmp = bd.N1;
+                bd.N1 = bd.U2;
+                bd.U2 = bd.N2;
+                bd.N2 = bd.U1;
+                bd.U1 = tmp;
+                //ノードのデータの変更
+                DraggedNode.Theta -= Mathf.PI / 2f;
+                float rtmp = DraggedNode.R[0];
+                DraggedNode.R[0] = DraggedNode.R[3];
+                DraggedNode.R[3] = DraggedNode.R[2];
+                DraggedNode.R[2] = DraggedNode.R[1];
+                DraggedNode.R[1] = rtmp;
+                //エッジのデータの変更
+                Edge[] AllEdges = FindObjectsOfType<Edge>();
+                for(int e=0; e<AllEdges.Length; e++)
+                {
+                    Edge ed = AllEdges[e];
+                    if(ed.ANodeID == DraggedNode.ID)
+                    {
+                        ed.ANodeRID = (ed.ANodeRID + 1) % 4; 
+                    }
+                    else if(ed.BNodeID == DraggedNode.ID)
+                    {
+                        ed.BNodeRID = (ed.BNodeRID + 1) % 4;
+                    }
+                }
+            }
             DraggedNode = null;
         }
         else if (Display.IsFreeLoopMode())

@@ -10,7 +10,7 @@ public class Bead : MonoBehaviour {
     public Bead N1, U1, N2, U2;
     public int NumOfNbhd; // Nbhdの数
 
-    public bool Joint, MidJoint, NearJoint, BandJoint;
+    public bool Joint = false, MidJoint = false, NearJoint = false, BandJoint = false;
     public bool Active = true;
 
     // Use this for initialization
