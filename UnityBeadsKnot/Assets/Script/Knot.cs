@@ -564,6 +564,78 @@ public class Knot : MonoBehaviour
         }
         return null;
     }
+
+    /// <summary>
+    /// カーブに沿ってたどる。
+    /// オーバークロシングのみ、またはアンダークロシングのみでゴールできれば1,2のどちらかを返す。
+    /// </summary>
+    /// <param name="startBd">出発するビーズ</param>
+    /// <param name="goalBd">ゴールするビーズ</param>
+    /// <returns>-1: illegal, 0: nothing, 1: yes for N1, 2: yes for N2</returns>
+    public int FindBeadAlongCurve(Bead startBd, Bead startNextBd, Bead goalBd)
+    {
+        Bead Prev = startBd;
+        Bead Now = startNextBd;
+        int overUnder = 0;// 1: Overのみ, 2:アンダーのみ
+        if (Prev == null || Now == null)
+        {
+            return -1;
+        }
+        Bead Next = null;
+        int MaxRepeat = AllBeads.Length;
+        //以降は基本的にN1,N2しか見ない。
+        for (int repeat = 0; repeat < MaxRepeat; repeat++)
+        {
+            if (Now.N1 == Prev || Now.N1.ID == Prev.ID)//IDベースですすめる。
+            {
+                if (Now.Joint)
+                {
+                    if (overUnder == 0 || overUnder == 1) overUnder = 1;
+                    else return -1;
+                }
+                Next = Now.N2;
+            }
+            else if (Now.N2 == Prev || Now.N2.ID == Prev.ID)
+            {
+                if (Now.Joint)
+                {
+                    if (overUnder == 0 || overUnder == 1) overUnder = 1;
+                    else return -1;
+                }
+                Next = Now.N1;
+            }
+            else if (Now.U1 == Prev || (Now.U1!=null && Now.U2 != null && Now.U1.ID == Prev.ID))//IDベースですすめる。
+            {
+                if (Now.Joint)
+                {
+                    if (overUnder == 0 || overUnder == 2) overUnder = 2;
+                    else return -1;
+                }
+                Next = Now.U2;
+            }
+            else if (Now.U2 == Prev || (Now.U1 != null && Now.U2 != null && Now.U2.ID == Prev.ID))
+            {
+                if (Now.Joint)
+                {
+                    if (overUnder == 0 || overUnder == 2) overUnder = 2;
+                    else return -1;
+                }
+                Next = Now.U1;
+            }
+            else
+            {
+                Debug.Log("error in FindEndOfEdgeOnBead : 0 ");
+                break;
+            }
+            Prev = Now;
+            Now = Next;
+            if (Now == goalBd || Now.ID==goalBd.ID)
+            {
+                return overUnder;
+            }
+        }
+        return -1;// 失敗
+    }
     /// <summary>
     /// すべてのBead, Node, Edgeを消去する
     /// </summary>

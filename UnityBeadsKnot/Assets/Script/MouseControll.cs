@@ -347,6 +347,7 @@ public class MouseControll : MonoBehaviour {
                 }
                 //終了地点がビーズだったら、処理に入る。
                 //終了地点がビーズでなかったら、非処理フラグを立てる
+                Bead EndFreeCurveBead = null;
                 if (!NoProc)
                 {
                     NoProc = true;
@@ -355,6 +356,8 @@ public class MouseControll : MonoBehaviour {
                         if((thisKnot.AllBeads[b].Position - MouseUpVec).magnitude < 0.2f)
                         {
                             NoProc = false;
+                            // 終了ビーズを記録
+                            EndFreeCurveBead = thisKnot.AllBeads[b];
                             break;
                         }
                     }
@@ -367,13 +370,25 @@ public class MouseControll : MonoBehaviour {
                 }
                 else// 処理に入る
                 {
-                    // 終了ビーズを記録
                     // 開始ビーズから終了ビーズをたどる方法を探索
                     // 開始ビーズから終了ビーズの間にクロシングがどのように表れるかを調査。
+                    // 0,何もなし、1:オーバーのみ、2:アンダーのみ
+                    int GotoN1 = thisKnot.FindBeadAlongCurve(StartFreeCurveBead, StartFreeCurveBead.N1, EndFreeCurveBead);
+                    int GotoN2 = thisKnot.FindBeadAlongCurve(StartFreeCurveBead, StartFreeCurveBead.N2, EndFreeCurveBead);
+                    //Debug.Log(GotoN1 + "," + GotoN2);
                     // オーバーのみ、またはアンダーのみの時には処理を開始
-                    //　開始ビーズから終了ビーズまでの既存のビーズラインを消去
-                    // フリーループにあたる部分をビーズへと変換
-                    // 旧フリーループと旧ビーズとの交点を探してジョイントにする。
+                    if (GotoN1 != -1) 
+                    {
+                        //　開始ビーズから終了ビーズまでの既存のビーズラインを消去
+                        // フリーループにあたる部分をビーズへと変換
+                        // 旧フリーループと旧ビーズとの交点を探してジョイントにする。
+                    }
+                    else if(GotoN2 != -1)
+                    {
+                        //　開始ビーズから終了ビーズまでの既存のビーズラインを消去
+                        // フリーループにあたる部分をビーズへと変換
+                        // 旧フリーループと旧ビーズとの交点を探してジョイントにする。
+                    }
                     // グラフ構造を書き換える
                     // 形を整える
                 }
