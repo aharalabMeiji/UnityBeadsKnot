@@ -380,12 +380,14 @@ public class MouseControll : MonoBehaviour {
                     if (GotoN1 != -1) 
                     {
                         //　開始ビーズから終了ビーズまでの既存のビーズラインを消去
+                        thisKnot.DeleteBeadsFromTo(StartFreeCurveBead, StartFreeCurveBead.N1, EndFreeCurveBead);
                         // フリーループにあたる部分をビーズへと変換
                         // 旧フリーループと旧ビーズとの交点を探してジョイントにする。
                     }
                     else if(GotoN2 != -1)
                     {
                         //　開始ビーズから終了ビーズまでの既存のビーズラインを消去
+                        thisKnot.DeleteBeadsFromTo(StartFreeCurveBead, StartFreeCurveBead.N2, EndFreeCurveBead);
                         // フリーループにあたる部分をビーズへと変換
                         // 旧フリーループと旧ビーズとの交点を探してジョイントにする。
                     }
