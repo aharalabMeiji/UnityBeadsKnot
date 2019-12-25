@@ -163,6 +163,17 @@ public class MouseControll : MonoBehaviour {
                     StartFreeCurveBead = thisKnot.AllBeads[n];
                     FreeLoop.GetComponent<FreeLoop>().AddPoint2FreeCurve(MouseDownVec);
                     PreviousPosition = MouseDownVec;
+                    // ノードにスポットをつける
+                    for(int i=0; i<thisKnot.AllNodes.Length; i++)
+                    {
+                        Vector3 Pos = thisKnot.AllNodes[i].Position;
+                        if (thisKnot.AllNodes[i].inUse)
+                        {
+                            GameObject prefab = Resources.Load<GameObject>("Prefabs/Spot");
+                            GameObject obj = Instantiate<GameObject>(prefab, new Vector3(Pos.x, Pos.y, 0.1f), Quaternion.identity);
+                            obj.transform.localScale = new Vector3(0.25f, 0.25f, 1f);
+                        }
+                    }
                     return;
                 }
             }
@@ -216,7 +227,7 @@ public class MouseControll : MonoBehaviour {
                 // ドラッグしているノードについて、回転して適正な位置にする。
                 // thisKnot.UpdateNodeRotation();
             }
-            //フリーカーブを描いているとき
+            //通常モードでフリーカーブを描いているとき
             else if (StartFreeCurveBead != null)
             {
                 if ((PreviousPosition - MouseDragVec).magnitude > 0.1f)
@@ -224,7 +235,19 @@ public class MouseControll : MonoBehaviour {
                     FreeLoop freeloop = FreeLoop.GetComponent<FreeLoop>();
                     freeloop.AddPoint2FreeCurve(MouseDragVec);
                     PreviousPosition = MouseDragVec;
-                    //課題：ジョイントノードの近くを通り過ぎたら、フリーカーブをやめる。
+                    //ジョイントノードの近くを通り過ぎたら、フリーカーブをやめる。
+                    //ジョイントノードの近く＝ジョイントノードのこと
+                    for (int i = 0; i < thisKnot.AllNodes.Length; i++)
+                    {
+                        Vector3 Pos = thisKnot.AllNodes[i].Position;
+                        if (thisKnot.AllNodes[i].inUse)
+                        {
+                            if ((MouseDragVec - Pos).magnitude<0.25f)
+                            {//フリーカーブをやめる。
+                                FreeLoop.GetComponent<FreeLoop>().FreeCurve.Clear();
+                            }
+                        }
+                    }
                 }
             }
         }
