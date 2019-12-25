@@ -245,6 +245,12 @@ public class MouseControll : MonoBehaviour {
                             if ((MouseDragVec - Pos).magnitude<0.25f)
                             {//フリーカーブをやめる。
                                 FreeLoop.GetComponent<FreeLoop>().FreeCurve.Clear();
+                                // スポットを消去する
+                                Spot[] NodeSpots = FindObjectsOfType<Spot>();
+                                for (int j = 0; j < NodeSpots.Length; j++)
+                                {
+                                    Destroy(NodeSpots[j].gameObject);
+                                }
                             }
                         }
                     }
@@ -322,6 +328,12 @@ public class MouseControll : MonoBehaviour {
             // フリーカーブを描いているとき
             else if (StartFreeCurveBead != null)
             {
+                // スポットを消去する
+                Spot[] NodeSpots = FindObjectsOfType<Spot>();
+                for(int i=0; i<NodeSpots.Length; i++)
+                {
+                    Destroy(NodeSpots[i].gameObject);
+                }
                 //終了地点がノードでないことが要件
                 bool NoProc = false;
                 //終了地点がノードだったら、非処理フラグを立てる
