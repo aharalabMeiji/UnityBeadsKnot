@@ -36,7 +36,11 @@ public class Bead : MonoBehaviour {
             gameObject.transform.localScale = new Vector3(0.04f, 0.04f, 1f);
             SR.color = new Color(0.9f,0.9f,0.9f);
         }
-        if (!Active)
+        if (Active)
+        {// 生き
+            gameObject.SetActive(true);
+        }
+        else
         {// ５６
             gameObject.SetActive(false);
         }

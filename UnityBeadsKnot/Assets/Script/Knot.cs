@@ -6,7 +6,7 @@ using System.IO;
 
 public class Knot : MonoBehaviour
 {
-    public GameObject Beads, Nbhds, Graph, Nodes, Edges;
+    public GameObject Beads, Graph, Nodes, Edges, FreeLoop;
     public Bead[] AllBeads;
     public Node[] AllNodes;
     public Edge[] AllEdges;
@@ -338,8 +338,16 @@ public class Knot : MonoBehaviour
         }
         return -1;
     }
-
-        Vector3 GetBezier(Vector3 v1, Vector3 v2, Vector3 v3, Vector3 v4, float t)
+    /// <summary>
+    /// ベジエカーブの座標を与える
+    /// </summary>
+    /// <param name="v1"></param>
+    /// <param name="v2"></param>
+    /// <param name="v3"></param>
+    /// <param name="v4"></param>
+    /// <param name="t"></param>
+    /// <returns></returns>
+    Vector3 GetBezier(Vector3 v1, Vector3 v2, Vector3 v3, Vector3 v4, float t)
     {
         Vector3 v12 = (1f - t) * v1 + t * v2;
         Vector3 v23 = (1f - t) * v2 + t * v3;
@@ -348,7 +356,28 @@ public class Knot : MonoBehaviour
         Vector3 v234 = (1f - t) * v23 + t * v34;
         return (1f - t) * v123 + t * v234;
     }
-
+    /// <summary>
+    /// ビーズIDの最大値を求める
+    /// </summary>
+    /// <returns></returns>
+    int GetMaxIDOfBead()
+    {
+        GetAllThings();
+        int Max = 0;
+        for (int i = 0; i < AllBeads.Length; i++)
+        {
+            if (AllBeads[i].ID > Max)
+            {
+                Max = AllBeads[i].ID;
+            }
+        }
+        return Max;
+    }
+    /// <summary>
+    /// IDからビーズを求める
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
     public Node GetNodeByID(int id)
     {
         for (int i = 0; i < AllNodes.Length; i++)
@@ -979,13 +1008,14 @@ public class Knot : MonoBehaviour
         Prev.NumOfNbhd = 1;
         if (Prev.N1 == StartFreeCurveBeadN1) Prev.N1 = Prev.N2;
         Prev.N2 = null;
-        Now.Active = false;
         int MaxRepeat = AllBeads.Length;
         //以降は基本的にN1,N2しか見ない。
+        //ノードに行き当たったら、ノードを開放する（農奴の開放）→保留
         for (int repeat = 0; repeat < MaxRepeat; repeat++)
         {
             if (Now.N1 == Prev || Now.N1.ID == Prev.ID)//IDベースですすめる。
             {
+                Next = Now.N2;
                 if (Now.Joint)
                 {
                     //U1をN1へ、U2をN1へコピ
@@ -997,12 +1027,16 @@ public class Knot : MonoBehaviour
                     Now.NumOfNbhd = 2;
                     //Jointをやめる
                     Now.Joint = Now.MidJoint = false;
-                    //ノードとエッジの処理は後で行う。ので、ここでは不必要
                 }
-                Next = Now.N2;
+                else
+                {
+                    // Nowを使用不可にする。
+                    Now.Active = false;
+                }
             }
             else if (Now.N2 == Prev || Now.N2.ID == Prev.ID)
             {
+                Next = Now.N1;
                 if (Now.Joint)
                 {
                     //U1をN1へ、U2をN1へコピ
@@ -1016,10 +1050,15 @@ public class Knot : MonoBehaviour
                     Now.Joint = Now.MidJoint = false;
                     //ノードとエッジの処理は後で行う。ので、ここでは不必要
                 }
-                Next = Now.N1;
+                else
+                {
+                    // Nowを使用不可にする。
+                    Now.Active = false;
+                }
             }
             else if (Now.U1 == Prev || (Now.U1 != null && Now.U2 != null && Now.U1.ID == Prev.ID))//IDベースですすめる。
             {
+                Next = Now.U2;
                 if (Now.Joint)
                 {
                     // U1,U2をnullにする
@@ -1030,10 +1069,15 @@ public class Knot : MonoBehaviour
                     Now.Joint = Now.MidJoint = false;
                     //ノードとエッジの処理は後で行う。ので、ここでは不必要
                 }
-                Next = Now.U2;
+                else
+                {
+                    // Nowを使用不可にする。
+                    Now.Active = false;
+                }
             }
             else if (Now.U2 == Prev || (Now.U1 != null && Now.U2 != null && Now.U2.ID == Prev.ID))
             {
+                Next = Now.U1;
                 if (Now.Joint)
                 {
                     // U1,U2をnullにする
@@ -1044,7 +1088,11 @@ public class Knot : MonoBehaviour
                     Now.Joint = Now.MidJoint = false;
                     //ノードとエッジの処理は後で行う。ので、ここでは不必要
                 }
-                Next = Now.U1;
+                else
+                {
+                    // Nowを使用不可にする。
+                    Now.Active = false;
+                }
             }
             else
             {
@@ -1053,21 +1101,15 @@ public class Knot : MonoBehaviour
             }
             Prev = Now;
             Now = Next;
-            // Nowを使用不可にする。
-            Now.Active = false;
-            if(Next == EndFreeCurveBead || Next.ID == EndFreeCurveBead.ID)
+            if(Now == EndFreeCurveBead || Now.ID == EndFreeCurveBead.ID)
             {
-                // Nextのアレをnull にして、
-                if (Next.N1 == Now)
+                // NowのN2をnull にして、
+                if (Now.N1 == Prev)
                 {
-                    Next.N1 = Next.N2;
-                    Next.N2 = null;
+                    Now.N1 = Now.N2;
                 }
-                else
-                {
-                    Next.N2 = null;
-                }
-                // NextのNumberoFNbhdを１にする。
+                Next.N2 = null;
+                // NowのNumberOfNbhdを１にする。
                 Next.NumOfNbhd = 1;
                 break;
             }
@@ -1075,74 +1117,95 @@ public class Knot : MonoBehaviour
         // Active==false なbeadを消す？
     }
 
+
+    
     /// <summary>
-    /// フリーカーブでつながれた経路を新しい経路とする。古い道は削除済み
+    /// フリーカーブでつながれた経路を新しい経路とする。
     /// </summary>
     /// <param name="startBead"></param>
     /// <param name="endBead"></param>
-    /// <param name="N1"></param>
-    void FreeCurve2Bead(Bead startBead, Bead endBead, bool N1)
+    public void FreeCurve2Bead(Bead startBead, Bead endBead)
     {
         // まず、traceをすべてbeadに置き換える。（両端は除く）
         //Debug.Log("FreeLoopをbeadsに変換");
         int startID = startBead.ID;
-        int freeLoopStartBeadID = 0;
+        int freeLoopStartBeadID = GetMaxIDOfBead();// 最初の番号は freeLoopStartBeadID+1 
         if (startBead == null || endBead == null)
         {
             Debug.Log("FreeCurve2Bead:error:入力の値が不正");
             return;
         }
-        //if (startBead.c == 1)
-        //{//スタートビーズのデータを整える
-        //    startBead.n2 = data.points.size();
-        //    startBead.c = 2;
-        //    //} else if (startBead.c==0) {// 想定として、 c は0か1
-        //    //  startBead.n1 = data.points.size();
-        //    //  startBead.c = 1;
-        //}
-        //else
-        //{
-        //    //それ以外なら、即刻辞める
-        //    println("startBeadの異常");
-        //    return;
-        //}
-        //Bead endBead = data.getBead(endBeadID);
-        //if (endBead.c != 1 && endBead.c != 0)
-        //{//エンドビーズについてもおかしなところがあれば即刻辞める
-        //    return;
-        //}
-        //traceStartBeadID = data.points.size();// 追加されるべき最初のbeadの番号
-        //for (int trID = 1; trID < trace.size() - 1; trID++)
-        //{//traceをひとつひとつbeadに置き換える
-        //    PVector tr = trace.get(trID);
-        //    Bead newBd = new Bead(disp.getX_fromWin(tr.x), disp.getY_fromWin(tr.y));
-
-        //    int prevBeadID = data.points.size() - 1;
-        //    if (trID == 1)
-        //    {
-        //        prevBeadID = startID;
-        //    }
-        //    int nextBeadID = data.points.size() + 1;
-        //    if (trID == trace.size() - 2)
-        //    {
-        //        nextBeadID = endBeadID;
-        //    }
-        //    newBd.n1 = prevBeadID;
-        //    newBd.n2 = nextBeadID;
-        //    newBd.c = 2;
-        //    data.points.add(newBd);
-        //}
-        //if (endBead.c == 1)
-        //{
-        //    endBead.n2 = data.points.size() - 1;
-        //    endBead.c = 2;
-        //    //} else if (endBead.c==0) {
-        //    //  endBead.n1 = data.points.size()-1;
-        //    //  endBead.c = 1;
-        //}
+        if (startBead.NumOfNbhd != 1 || startBead.N1==null)
+        {
+            //即刻辞める
+            Debug.Log("FreeCurve2Bead:error:startBeadの異常");
+            return;
+        }
+        if (endBead.NumOfNbhd != 1 || endBead.N1==null)
+        {
+            //即刻辞める
+            Debug.Log("FreeCurve2Bead:error:endBeadの異常");
+            return;
+        }
+        //FreeLoopをひとつひとつbeadに置き換える(最初と最後は省く)
+        FreeLoop freeloop = FreeLoop.GetComponent<FreeLoop>();
+        int freeCurveSize = freeloop.FreeCurve.Count;
+        for (int i = 1; i < freeCurveSize-1; i++)
+        {
+            //ビーズを追加(freeLoopStartBeadID + i=ID番号)
+            AddBead(freeloop.FreeCurve[i], freeLoopStartBeadID + i);
+        }
+        AllBeads = FindObjectsOfType<Bead>();
+        for (int i = 1; i < freeCurveSize-1; i++)
+        {
+            // N1,N2, NumOfNbhdを設定
+            int ID = freeLoopStartBeadID + i;
+            Bead bd = GetBeadByID(ID);
+            Debug.Log(bd + "," + ID);
+            if (i == 1) 
+            { 
+                bd.N1 = startBead;
+            }
+            else
+            {
+                bd.N1 = GetBeadByID(ID - 1);
+            }
+            if(i== freeCurveSize - 2)
+            {
+                bd.N2 = endBead;
+            }
+            else
+            {
+                bd.N2 = GetBeadByID(ID + 1);
+            }
+        }
 
 
-
+        {//スタートビーズのデータを整える
+            if (startBead.NumOfNbhd == 0)
+            {
+                startBead.N1 = GetBeadByID(freeLoopStartBeadID + 1);
+                startBead.NumOfNbhd = 1;
+            } else if(startBead.NumOfNbhd == 1)
+            {
+                startBead.N2 = GetBeadByID(freeLoopStartBeadID + 1);
+                startBead.NumOfNbhd = 2;
+            }
+        }
+        {//エンドビーズのデータを整える
+            if (endBead.NumOfNbhd == 0)
+            {
+                endBead.N1 = GetBeadByID(freeLoopStartBeadID + freeCurveSize - 2);
+                endBead.NumOfNbhd = 1;
+            }
+            else if (endBead.NumOfNbhd == 1)
+            {
+                endBead.N2 = GetBeadByID(freeLoopStartBeadID + freeCurveSize - 2);
+                endBead.NumOfNbhd = 2;
+            }
+        }
+        // freeloopを開放
+        freeloop.FreeCurve.Clear();
         ////そののちに、既存のビーズ列、自分自身との交差を判定し、jointを追加する。
         //ArrayList<PVector> meets = new ArrayList<PVector>();
         //int beadsNumber = data.points.size();

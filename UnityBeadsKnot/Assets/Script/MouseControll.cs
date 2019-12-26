@@ -382,6 +382,7 @@ public class MouseControll : MonoBehaviour {
                         //　開始ビーズから終了ビーズまでの既存のビーズラインを消去
                         thisKnot.DeleteBeadsFromTo(StartFreeCurveBead, StartFreeCurveBead.N1, EndFreeCurveBead);
                         // フリーループにあたる部分をビーズへと変換
+                        thisKnot.FreeCurve2Bead(StartFreeCurveBead, EndFreeCurveBead);
                         // 旧フリーループと旧ビーズとの交点を探してジョイントにする。
                     }
                     else if(GotoN2 != -1)
@@ -389,6 +390,7 @@ public class MouseControll : MonoBehaviour {
                         //　開始ビーズから終了ビーズまでの既存のビーズラインを消去
                         thisKnot.DeleteBeadsFromTo(StartFreeCurveBead, StartFreeCurveBead.N2, EndFreeCurveBead);
                         // フリーループにあたる部分をビーズへと変換
+                        thisKnot.FreeCurve2Bead(StartFreeCurveBead, EndFreeCurveBead);
                         // 旧フリーループと旧ビーズとの交点を探してジョイントにする。
                     }
                     // グラフ構造を書き換える
@@ -412,8 +414,8 @@ public class MouseControll : MonoBehaviour {
                 //スタート地点に近い場所で終わった場合は、まずはBeadへと変換する。
                 // すべてのビーズを消す（不要）
                 thisKnot.ClearAll();
-                int freeCurveSize = freeloop.FreeCurve.Count;
                 // まず1列のbeadの列を作る。
+                int freeCurveSize = freeloop.FreeCurve.Count;
                 for (int b = 0; b < freeCurveSize; b++)
                 {
                     //ビーズを追加(b=ID番号)
