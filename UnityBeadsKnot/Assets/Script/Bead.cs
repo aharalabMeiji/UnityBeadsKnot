@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class Bead : MonoBehaviour {
+    public bool Active = true;
 
     public Vector3 Position;
     public int ID;
@@ -10,8 +11,7 @@ public class Bead : MonoBehaviour {
     public Bead N1, U1, N2, U2;
     public int NumOfNbhd; // Nbhdの数
 
-    public bool Joint = false, MidJoint = false, NearJoint = false, BandJoint = false;
-    public bool Active = true;
+    public bool Joint = false, MidJoint = false;
 
     // Use this for initialization
     private void Start()
@@ -26,7 +26,7 @@ public class Bead : MonoBehaviour {
         gameObject.transform.position = Position;
 
         SpriteRenderer SR = GetComponent<SpriteRenderer>();
-        if(Joint || MidJoint || BandJoint)
+        if(Joint || MidJoint)
         {
             gameObject.transform.localScale = new Vector3(0.06f, 0.06f, 1f);
             SR.color = Color.green;

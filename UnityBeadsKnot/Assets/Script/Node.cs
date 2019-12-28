@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class Node : MonoBehaviour {
+    public bool Active;
 
     public Vector3 Position;
     public float Theta;
@@ -10,15 +11,14 @@ public class Node : MonoBehaviour {
     //public int[] EdgeID;//Edge型？
 
     public Bead ThisBead;// Bead型
-    public bool inUse;
     public int ID;
 
-    public bool Joint = true, MidJoint = false, BandJoint = false;
+    public bool Joint = true, MidJoint = false;
 
     // Use this for initialization
     void Start() {
         //R = new float[4];	
-        inUse = true;
+        Active = true;
     }
 
 

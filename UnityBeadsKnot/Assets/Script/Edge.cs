@@ -24,14 +24,14 @@ public class Edge : MonoBehaviour
     private float rate, t1, t2;
     private int th1, th2;
 
-    public bool inUse;
+    public bool Active;
 
     // Use this for initialization
     void Start()
     {
         //BeadsNumber = 0;
         //Beads = new List<Bead>();
-        inUse = true;
+        Active = true;
     }
 
     // Update is called once per frame
@@ -242,7 +242,7 @@ public class Edge : MonoBehaviour
             }
         }
         if(ANode == null || BNode == null) return;
-        if (!ANode.inUse || !BNode.inUse) return;
+        if (!ANode.Active || !BNode.Active) return;
         float v1X = ANode.Position.x;
         float v1Y = ANode.Position.y;
         Vector3 v2 = ANode.GetCoordEdgeEnd(ANodeRID);
@@ -298,11 +298,11 @@ public class Edge : MonoBehaviour
         //Debug.Log("AdjustLineRenderer()");
         //Debug.Log(ParentKnot);
         Node ANode = ParentKnot.GetNodeByID(ANodeID);
-        Node BNode = ParentKnot.GetNodeByID(BNodeID);
+        //Node BNode = ParentKnot.GetNodeByID(BNodeID);
 
-        //if (!ANode.inUse || !BNode.inUse) return;
+        //if (!ANode.Active || !BNode.ActiveW) return;
         Bead ABead = ANode.ThisBead;
-        Bead BBead = BNode.ThisBead;
+        //Bead BBead = BNode.ThisBead;
         List<Vector3> Positions = new List<Vector3>();
         if (ANodeRID == 0 || ANodeRID == 2)
             Positions.Add(ABead.Position);
@@ -317,6 +317,15 @@ public class Edge : MonoBehaviour
         //以降は基本的にN1,N2しか見ない。
         for (int repeat = 0; repeat < MaxRepeat; repeat++)
         {
+            if(Now==null)
+            {
+                Debug.LogError("error in AdjustLineRenderer() : prev = " +Prev.ID+":repeat = "+repeat);
+                return;
+            }
+            if (Now.N1 == null)
+            {
+                Debug.LogError("error in AdjustLineRenderer() : Now.ID ="+Now.ID );
+            }
             if (Now.N1 == Prev || Now.N1.ID == Prev.ID)//IDベースですすめる。
             {
                 Next = Now.N2;
@@ -327,7 +336,7 @@ public class Edge : MonoBehaviour
             }
             else
             {
-                Debug.Log("error in AdjustLineRenderer() : " + repeat+" "+ Now.N1.ID+" "+ Now.N2.ID);
+                Debug.LogError("error in AdjustLineRenderer() : " + repeat+" "+ Now.N1.ID+" "+ Now.N2.ID);
                 break;
             }
             Positions.Add(Now.Position);

@@ -167,7 +167,7 @@ public class MouseControll : MonoBehaviour {
                     for(int i=0; i<thisKnot.AllNodes.Length; i++)
                     {
                         Vector3 Pos = thisKnot.AllNodes[i].Position;
-                        if (thisKnot.AllNodes[i].inUse)
+                        if (thisKnot.AllNodes[i].Active)
                         {
                             GameObject prefab = Resources.Load<GameObject>("Prefabs/Spot");
                             GameObject obj = Instantiate<GameObject>(prefab, new Vector3(Pos.x, Pos.y, 0.1f), Quaternion.identity);
@@ -240,7 +240,7 @@ public class MouseControll : MonoBehaviour {
                     for (int i = 0; i < thisKnot.AllNodes.Length; i++)
                     {
                         Vector3 Pos = thisKnot.AllNodes[i].Position;
-                        if (thisKnot.AllNodes[i].inUse)
+                        if (thisKnot.AllNodes[i].Active)
                         {
                             if ((MouseDragVec - Pos).magnitude<0.25f)
                             {//フリーカーブをやめる。
@@ -574,10 +574,9 @@ public class MouseControll : MonoBehaviour {
                     thisKnot.CreateNodesEdgesFromBeads();
                     // 形を整える
                     thisKnot.GetAllThings();
-                    thisKnot.Modify();
                     thisKnot.UpdateBeads();
+                    thisKnot.Modify();
 
-                    // Nbhdを作る
                     thisKnot.AdjustEdgeLine();
 
                     //モードを戻す
