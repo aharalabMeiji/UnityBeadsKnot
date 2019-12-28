@@ -328,7 +328,15 @@ public class Knot : MonoBehaviour
                 }
             }
         }
-        AllEdges = FindObjectsOfType<Edge>();
+        GetAllThings();
+        //グラフの形を整える。現状ではR[]を整えるだけ。
+        //Modify();
+        //
+        UpdateBeads();
+        //  CloseJointの設定を行う（マストではない）            
+        //graph.add_close_point_Joint();
+        //            Draw.beads();// drawモードの変更
+        AdjustEdgeLine();
     }
 
     /// <summary>

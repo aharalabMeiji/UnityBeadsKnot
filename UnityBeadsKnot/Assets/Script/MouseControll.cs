@@ -541,7 +541,8 @@ public class MouseControll : MonoBehaviour {
                         thisKnot.AllBeads[b2 - 1].N1 = bd1;
                         thisKnot.AllBeads[b2 + 1].N2 = bd1;
                         //消去
-                        bd2.Active = false;// ここでは直接消さない。
+                        bd2.Active = false;// 
+                        bd2.gameObject.SetActive(false);
                     }
                     thisKnot.AllBeads = FindObjectsOfType<Bead>();
                     freeCurveSize = thisKnot.AllBeads.Length;
@@ -570,71 +571,7 @@ public class MouseControll : MonoBehaviour {
                     }
 
                     // Nodeを追加する
-                    thisKnot.AllBeads = FindObjectsOfType<Bead>();
                     thisKnot.CreateNodesEdgesFromBeads();
-                    {
-                        thisKnot.ClearAllNodes();
-                    int nodeID = 0;
-                    // AllBeadsからJointだけを取り出してNodeにする
-                    // 基本的に二重手間だと思うが、特に上に組み込むことはしない。
-                    for (int i = 0; i < thisKnot.AllBeads.Length; i++)
-                    {
-                        Bead bd = thisKnot.AllBeads[i];
-                        if (bd.Joint)
-                        {
-                            Node nd = thisKnot.AddNode(bd.Position, nodeID);
-                            nodeID++;
-                            nd.ThisBead = bd;
-                            float n1x = bd.N1.Position.x - bd.Position.x;
-                            float n1y = bd.N1.Position.y - bd.Position.y;
-                            nd.Theta = Mathf.Atan2(n1y, n1x);  //ここでできるだけ計算する
-                        }
-                    }
-                    // AllBeadsからMidJointだけを取り出してNodeにする。（以上で通し番号をつける）
-                    // 基本的に二重手間だと思うが、特に上に組み込むことはしない。
-                    for (int i = 0; i < thisKnot.AllBeads.Length; i++)
-                    {
-                        Bead bd = thisKnot.AllBeads[i];
-                        if (bd.MidJoint)
-                        {
-                            Node nd = thisKnot.AddNode(bd.Position, nodeID);
-                            nodeID++;
-                            nd.ThisBead = bd;
-                            float n1x = bd.N1.Position.x - bd.Position.x;
-                            float n1y = bd.N1.Position.y - bd.Position.y;
-                            nd.Theta = Mathf.Atan2(n1y, n1x);  //ここでできるだけ計算する
-                        }
-                    }
-                    thisKnot.AllNodes = FindObjectsOfType<Node>();
-                    // Edgeを一度クリアする
-                    thisKnot.ClearAllEdges();
-                    int edgeID = 0;
-                    // JointとMidJointからエッジを探し出してデータ化する
-                    // 基本的に二重手間だと思うが、特に上に組み込むことはしない。
-                    for (int i = 0; i < thisKnot.AllNodes.Length; i++)
-                    {
-                        Node nd = thisKnot.AllNodes[i];
-                        Bead bd = nd.ThisBead;
-                        if (bd.Joint)//おそらく、JointからMidJointへのエッジしか存在しない。
-                        {
-                            for (int r = 0; r < 4; r++)
-                            {
-                                PairInt br = thisKnot.FindEndOfEdgeOnBead(bd, r, true);
-                                int nd2 = thisKnot.GetNodeIDFromBeadID(br.first);
-                                if (br.first != -1)
-                                {
-                                    Edge ed = thisKnot.AddEdge(nd.ID, nd2, r, br.second, edgeID);
-                                    edgeID++;
-                                    Debug.Log(nd.ID + "," + r + "," + nd2 + "," + br.second + ":" + edgeID);
-                                }
-                            }
-                        }
-                        //else if (bd.MidJoint)
-                        //{
-                        //}
-                    }
-                    thisKnot.AllEdges = FindObjectsOfType<Edge>();
-                }
                     // 形を整える
                     thisKnot.GetAllThings();
                     thisKnot.Modify();
