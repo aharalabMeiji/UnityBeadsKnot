@@ -383,7 +383,7 @@ public class MouseControll : MonoBehaviour {
                         //　開始ビーズから終了ビーズまでの既存のビーズラインを消去
                         thisKnot.DeleteBeadsFromTo(StartFreeCurveBead, StartFreeCurveBead.N1, EndFreeCurveBead);
                         // フリーループにあたる部分をビーズへと変換
-                        thisKnot.FreeCurve2Bead(StartFreeCurveBead, EndFreeCurveBead);
+                        thisKnot.FreeCurve2Bead(StartFreeCurveBead, EndFreeCurveBead, GotoN1);
                         // 旧フリーループと旧ビーズとの交点を探してジョイントにする。
                     }
                     else if(GotoN2 != -1)
@@ -391,7 +391,7 @@ public class MouseControll : MonoBehaviour {
                         //　開始ビーズから終了ビーズまでの既存のビーズラインを消去
                         thisKnot.DeleteBeadsFromTo(StartFreeCurveBead, StartFreeCurveBead.N2, EndFreeCurveBead);
                         // フリーループにあたる部分をビーズへと変換
-                        thisKnot.FreeCurve2Bead(StartFreeCurveBead, EndFreeCurveBead);
+                        thisKnot.FreeCurve2Bead(StartFreeCurveBead, EndFreeCurveBead, GotoN2);
                         // 旧フリーループと旧ビーズとの交点を探してジョイントにする。
                     }
                     // グラフ構造を書き換える
@@ -503,7 +503,7 @@ public class MouseControll : MonoBehaviour {
                         }
                     }
                 }
-                if(meets.Count == 0)
+                if (meets.Count == 0)
                 { // 交点の個数が0ならば、Beadを全部捨てる。
                     thisKnot.ClearAllBeads();
                     //モードを戻しておく
@@ -511,7 +511,7 @@ public class MouseControll : MonoBehaviour {
                 }
                 else
                 {// さもなくば、交点に当たるところをJointにする
-                    for(int i=0; i<meets.Count; i++)
+                    for (int i = 0; i < meets.Count; i++)
                     {
                         int b1 = meets[i].first;
                         int b2 = meets[i].second;
@@ -528,7 +528,7 @@ public class MouseControll : MonoBehaviour {
                         float bd2n1y = bd2.N1.Position.y - bd1y;
                         float bd2n2x = bd2.N2.Position.x - bd1x;
                         float bd2n2y = bd2.N2.Position.y - bd1y;
-                        if(n1x * bd2n1y - n1y * bd2n1x > 0 && n1x * bd2n2y - n1y * bd2n2x < 0)
+                        if (n1x * bd2n1y - n1y * bd2n1x > 0 && n1x * bd2n2y - n1y * bd2n2x < 0)
                         {
                             bd1.U1 = bd2.N1;
                             bd1.U2 = bd2.N2;
@@ -541,9 +541,7 @@ public class MouseControll : MonoBehaviour {
                         thisKnot.AllBeads[b2 - 1].N1 = bd1;
                         thisKnot.AllBeads[b2 + 1].N2 = bd1;
                         //消去
-                        GameObject obj2 = bd2.gameObject;
-                        obj2.SetActive(false);//やる意味が分からないが、やっておいたほうがいいらしい。
-                        Destroy(obj2);// 消去！
+                        bd2.Active = false;// ここでは直接消さない。
                     }
                     thisKnot.AllBeads = FindObjectsOfType<Bead>();
                     freeCurveSize = thisKnot.AllBeads.Length;
@@ -555,7 +553,7 @@ public class MouseControll : MonoBehaviour {
                         {
                             for (int r1 = 0; r1 < 4; r1++)
                             {
-                                PairInt br2 = thisKnot.FindEndOfEdgeOnBead(bd, r1,true);
+                                PairInt br2 = thisKnot.FindEndOfEdgeOnBead(bd, r1, true);
                                 Bead endBead = thisKnot.FindBeadByID(br2.first);
                                 if (endBead != null && endBead.Joint)
                                 {
@@ -563,7 +561,7 @@ public class MouseControll : MonoBehaviour {
                                     int count = thisKnot.CountBeadsOnEdge(bd, r1);
                                     // midJointを作る
                                     Bead midJointBead = thisKnot.GetBeadOnEdge(bd, r1, Mathf.FloorToInt(count / 2));
-                                    if(midJointBead != null)
+                                    if (midJointBead != null)
                                         midJointBead.MidJoint = true;
                                     Debug.Log(bd.ID + "," + r1 + "->" + br2.first + "," + br2.second + "(" + count + ")");
                                 }
@@ -573,16 +571,18 @@ public class MouseControll : MonoBehaviour {
 
                     // Nodeを追加する
                     thisKnot.AllBeads = FindObjectsOfType<Bead>();
-                    thisKnot.ClearAllNodes();
+                    thisKnot.CreateNodesEdgesFromBeads();
+                    {
+                        thisKnot.ClearAllNodes();
                     int nodeID = 0;
                     // AllBeadsからJointだけを取り出してNodeにする
                     // 基本的に二重手間だと思うが、特に上に組み込むことはしない。
-                    for (int i=0; i<thisKnot.AllBeads.Length; i++)
+                    for (int i = 0; i < thisKnot.AllBeads.Length; i++)
                     {
                         Bead bd = thisKnot.AllBeads[i];
                         if (bd.Joint)
                         {
-                            Node nd = thisKnot.AddNode(bd.Position,nodeID);
+                            Node nd = thisKnot.AddNode(bd.Position, nodeID);
                             nodeID++;
                             nd.ThisBead = bd;
                             float n1x = bd.N1.Position.x - bd.Position.x;
@@ -606,12 +606,12 @@ public class MouseControll : MonoBehaviour {
                         }
                     }
                     thisKnot.AllNodes = FindObjectsOfType<Node>();
-                    // Edgeを追加する
+                    // Edgeを一度クリアする
                     thisKnot.ClearAllEdges();
                     int edgeID = 0;
                     // JointとMidJointからエッジを探し出してデータ化する
                     // 基本的に二重手間だと思うが、特に上に組み込むことはしない。
-                    for(int i=0; i<thisKnot.AllNodes.Length; i++)
+                    for (int i = 0; i < thisKnot.AllNodes.Length; i++)
                     {
                         Node nd = thisKnot.AllNodes[i];
                         Bead bd = nd.ThisBead;
@@ -623,7 +623,7 @@ public class MouseControll : MonoBehaviour {
                                 int nd2 = thisKnot.GetNodeIDFromBeadID(br.first);
                                 if (br.first != -1)
                                 {
-                                    Edge ed = thisKnot.AddEdge(nd.ID, nd2, r,  br.second, edgeID);
+                                    Edge ed = thisKnot.AddEdge(nd.ID, nd2, r, br.second, edgeID);
                                     edgeID++;
                                     Debug.Log(nd.ID + "," + r + "," + nd2 + "," + br.second + ":" + edgeID);
                                 }
@@ -634,6 +634,7 @@ public class MouseControll : MonoBehaviour {
                         //}
                     }
                     thisKnot.AllEdges = FindObjectsOfType<Edge>();
+                }
                     // 形を整える
                     thisKnot.GetAllThings();
                     thisKnot.Modify();
