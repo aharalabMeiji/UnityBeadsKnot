@@ -1161,7 +1161,7 @@ public class Knot : MonoBehaviour
             // N1,N2, NumOfNbhdを設定
             int ID = freeLoopStartBeadID + i;
             Bead bd = GetBeadByID(ID);
-            Debug.Log(bd + "," + ID);
+            //Debug.Log(bd + "," + ID);
             if (i == 1) 
             { 
                 bd.N1 = startBead;
@@ -1206,190 +1206,260 @@ public class Knot : MonoBehaviour
         }
         // freeloopを開放
         freeloop.FreeCurve.Clear();
-        ////そののちに、既存のビーズ列、自分自身との交差を判定し、jointを追加する。
+        //そののちに、既存のビーズ列、自分自身との交差を判定し、jointを追加する。
         //ArrayList<PVector> meets = new ArrayList<PVector>();
-        //int beadsNumber = data.points.size();
-        //for (int bdID1 = traceStartBeadID; bdID1 < beadsNumber; bdID1++)
-        //{
-        //    Bead bd1 = data.getBead(bdID1);
-        //    if (bd1.c >= 2)
-        //    {
-        //        for (int bdID2 = 0; bdID2 < beadsNumber; bdID2++)
-        //        {
-        //            Bead bd2 = data.getBead(bdID2);
-        //            if (bd2 != null && bdID2 < bdID1 && bd2.c >= 2)
-        //            {
-        //                int bd1n1 = bd1.n1;
-        //                int bd1n2 = bd1.n2;
-        //                int bd2n1 = bd2.n1;
-        //                int bd2n2 = bd2.n2;
-        //                if (bd1n1 != -1 && bd1n2 != -1 && bd2n1 != -1 && bd2n2 != -1
-        //                  && bd1n1 != bd2n1 && bd1n1 != bdID2 && bd1n1 != bd2n2
-        //                  && bdID1 != bd2n1 && bdID1 != bdID2 && bdID1 != bd2n2
-        //                  && bd1n2 != bd2n1 && bd1n2 != bdID2 && bd1n2 != bd2n2)
-        //                {
-        //                    float x1 = data.getBead(bd1n1).x;
-        //                    float y1 = data.getBead(bd1n1).y;
-        //                    float x2 = data.getBead(bd1n2).x;
-        //                    float y2 = data.getBead(bd1n2).y;
-        //                    float x3 = data.getBead(bd2n1).x;
-        //                    float y3 = data.getBead(bd2n1).y;
-        //                    float x4 = data.getBead(bd2n2).x;
-        //                    float y4 = data.getBead(bd2n2).y;
-        //                    //   (x2-x1)s - (x4-x3)t = +x3-x1 
-        //                    //   (y2-y1)s - (y4-y3)t = +y3-y1
-        //                    float a = x2 - x1;
-        //                    float b = -x4 + x3;
-        //                    float c = y2 - y1;
-        //                    float d = -y4 + y3;
-        //                    float p = x3 - x1;
-        //                    float q = y3 - y1;
-        //                    float s1 = p * d - b * q;  // s = s1/st
-        //                    float t1 = a * q - p * c;  // t = t1/st
-        //                    float st = a * d - b * c;
-        //                    if (st < 0)
-        //                    {
-        //                        st *= -1;
-        //                        s1 *= -1;
-        //                        t1 *= -1;
-        //                    }
-        //                    if (0 < s1 && s1 < st && 0 < t1 && t1 < st)
-        //                    {
-        //                        //trace.get(tr1+1) と trace.get(tr2+1)とを合流してJointにする。
-        //                        // 合流する点がJointに極めて近いときは失敗扱いにしたいが、
-        //                        //そもそもtraceがJointの近くを通らないことを保証しているので、信じることにする。
-        //                        //Jointの二重登録を避けるための作業。
-        //                        boolean localOK = true;
-        //                        for (int mt = 0; mt < meets.size(); mt++)
-        //                        {
-        //                            int js1 = int(meets.get(mt).x);
-        //                            int js2 = int(meets.get(mt).y);
-        //                            if (js1 == bd1n1 || js1 == bdID1 || js1 == bd1n2
-        //                              || js1 == bd2n1 || js1 == bdID2 || js1 == bd2n2
-        //                              || js2 == bd1n1 || js2 == bdID1 || js2 == bd1n2
-        //                              || js2 == bd2n1 || js2 == bdID2 || js2 == bd2n2)
-        //                            {
-        //                                println(bdID1, bdID2, js1, js2);
-        //                                localOK = false;
-        //                                break;
-        //                            }
-        //                        }
-        //                        if (localOK)
-        //                        {
-        //                            println(bdID1, "meets", bdID2);
-        //                            meets.add(new PVector(bdID1, bdID2));
-        //                            bd1 = data.getBead(bdID1);
-        //                            bd2 = data.getBead(bdID2);
-        //                            ///////Jointかunderかoverかで変わる
-        //                            ///overならbd1を採用し、underならbd2を採用する
-        //                            if (data.over_crossing)
-        //                            {
-        //                                bd1.c = 2;
-        //                                bd1.Joint = true;
-        //                                bd1.u1 = bd2n1;
-        //                                bd1.u2 = bd2n2;
-        //                                // bd1.c = 4;
-        //                                data.removeBeadFromPoint(bdID2);
-        //                                //bd2.n1 = -1;
-        //                                //bd2.n2 = -1;
-        //                                //bd2.x = bd2.y = -1f;
-        //                                //bd2.c = -1;
+        //重複も許して交点を検出
+        List<PairInt> meets = new List<PairInt>();
+        int MaxBeadMax = GetMaxIDOfBead();
+        for (int b1 = 0; b1 < MaxBeadMax; b1++)
+        {
+            Bead Bd1 = GetBeadByID(b1);
+            if (Bd1 == null) continue;
+            Bead Bd1N1 = Bd1.N1;
+            Bead Bd1N2 = Bd1.N2;
+            if (Bd1N1 == null || Bd1N2 == null) continue;
+            int startB2 = Mathf.Max(freeLoopStartBeadID + 1,b1+1);
+            for (int b2 = startB2; b2 < MaxBeadMax; b2++)
+            {
+                Bead Bd2 = GetBeadByID(b2);
+                if (Bd2 == null) continue;
+                Bead Bd2N1 = Bd2.N1;
+                Bead Bd2N2 = Bd2.N2;
+                int difference = b2 - b1;
+                if (Bd1N1 != Bd2 && Bd1N2 != Bd2 && Bd2N1 != Bd1 && Bd2N2 != Bd1)
+                {// そもそも異なる場所である保証。
+                    float x1 = Bd1N1.Position.x;
+                    float y1 = Bd1N1.Position.y;
+                    float x2 = Bd1N2.Position.x;
+                    float y2 = Bd1N2.Position.y;
+                    float x3 = Bd2N1.Position.x;
+                    float y3 = Bd2N1.Position.y;
+                    float x4 = Bd2N2.Position.x;
+                    float y4 = Bd2N2.Position.y;
+                    // (x2-x1)s+x1 = (x4-x3)t+x3
+                    // (y2-y1)s+y1 = (y4-y3)t+y3
+                    // (x2-x1)s - (x4-x3)t = +x3-x1
+                    // (y2-y1)s - (y4-y3)t = +y3-y1
+                    float a = x2 - x1;
+                    float b = -x4 + x3;
+                    float c = y2 - y1;
+                    float d = -y4 + y3;
+                    float p = x3 - x1;
+                    float q = y3 - y1;
+                    float s1 = p * d - b * q; // s = s1/st
+                    float t1 = a * q - p * c; // t = t1/st
+                    float st = a * d - b * c;
+                    if (st < 0)
+                    {
+                        st *= -1;
+                        s1 *= -1;
+                        t1 *= -1;
+                    }
+                    if (0 < s1 && s1 < st && 0 < t1 && t1 < st)
+                    { // 線分が交わっている条件
+                      //重複を排してListに貯める
+                        bool OK = true;
+                        for (int mt = 0; mt < meets.Count; mt++)
+                        {
+                            int m1 = meets[mt].first;
+                            int m2 = meets[mt].second;
+                            if (m1 == Bd1.ID || m1 == Bd1N1.ID || m1 == Bd1N2.ID || m1 == Bd2.ID || m1 == Bd2N1.ID || m1 == Bd2N2.ID
+                             || m2 == Bd1.ID || m2 == Bd1N1.ID || m2 == Bd1N2.ID || m2 == Bd2.ID || m2 == Bd2N1.ID || m2 == Bd2N2.ID)
+                            {// 
+                                OK = false;
+                                break;
+                            }
+                        }
+                        if (OK)
+                        {
+                            meets.Add(new PairInt(b1, b2));
+                            Debug.Log("OK:(" + b1 + "," + b2+")");
+                        }
+                    }
+                }
+            }
+        }
+            //for (int bdID1 = traceStartBeadID; bdID1 < beadsNumber; bdID1++)
+            //{
+            //    Bead bd1 = data.getBead(bdID1);
+            //    if (bd1.c >= 2)
+            //    {
+            //        for (int bdID2 = 0; bdID2 < beadsNumber; bdID2++)
+            //        {
+            //            Bead bd2 = data.getBead(bdID2);
+            //            if (bd2 != null && bdID2 < bdID1 && bd2.c >= 2)
+            //            {
+            //                int bd1n1 = bd1.n1;
+            //                int bd1n2 = bd1.n2;
+            //                int bd2n1 = bd2.n1;
+            //                int bd2n2 = bd2.n2;
+            //                if (bd1n1 != -1 && bd1n2 != -1 && bd2n1 != -1 && bd2n2 != -1
+            //                  && bd1n1 != bd2n1 && bd1n1 != bdID2 && bd1n1 != bd2n2
+            //                  && bdID1 != bd2n1 && bdID1 != bdID2 && bdID1 != bd2n2
+            //                  && bd1n2 != bd2n1 && bd1n2 != bdID2 && bd1n2 != bd2n2)
+            //                {
+            //                    float x1 = data.getBead(bd1n1).x;
+            //                    float y1 = data.getBead(bd1n1).y;
+            //                    float x2 = data.getBead(bd1n2).x;
+            //                    float y2 = data.getBead(bd1n2).y;
+            //                    float x3 = data.getBead(bd2n1).x;
+            //                    float y3 = data.getBead(bd2n1).y;
+            //                    float x4 = data.getBead(bd2n2).x;
+            //                    float y4 = data.getBead(bd2n2).y;
+            //                    //   (x2-x1)s - (x4-x3)t = +x3-x1 
+            //                    //   (y2-y1)s - (y4-y3)t = +y3-y1
+            //                    float a = x2 - x1;
+            //                    float b = -x4 + x3;
+            //                    float c = y2 - y1;
+            //                    float d = -y4 + y3;
+            //                    float p = x3 - x1;
+            //                    float q = y3 - y1;
+            //                    float s1 = p * d - b * q;  // s = s1/st
+            //                    float t1 = a * q - p * c;  // t = t1/st
+            //                    float st = a * d - b * c;
+            //                    if (st < 0)
+            //                    {
+            //                        st *= -1;
+            //                        s1 *= -1;
+            //                        t1 *= -1;
+            //                    }
+            //                    if (0 < s1 && s1 < st && 0 < t1 && t1 < st)
+            //                    {
+            //                        //trace.get(tr1+1) と trace.get(tr2+1)とを合流してJointにする。
+            //                        // 合流する点がJointに極めて近いときは失敗扱いにしたいが、
+            //                        //そもそもtraceがJointの近くを通らないことを保証しているので、信じることにする。
+            //                        //Jointの二重登録を避けるための作業。
+            //                        boolean localOK = true;
+            //                        for (int mt = 0; mt < meets.size(); mt++)
+            //                        {
+            //                            int js1 = int(meets.get(mt).x);
+            //                            int js2 = int(meets.get(mt).y);
+            //                            if (js1 == bd1n1 || js1 == bdID1 || js1 == bd1n2
+            //                              || js1 == bd2n1 || js1 == bdID2 || js1 == bd2n2
+            //                              || js2 == bd1n1 || js2 == bdID1 || js2 == bd1n2
+            //                              || js2 == bd2n1 || js2 == bdID2 || js2 == bd2n2)
+            //                            {
+            //                                println(bdID1, bdID2, js1, js2);
+            //                                localOK = false;
+            //                                break;
+            //                            }
+            //                        }
+            //                        if (localOK)
+            //                        {
+            //                            println(bdID1, "meets", bdID2);
+            //                            meets.add(new PVector(bdID1, bdID2));
+            //                            bd1 = data.getBead(bdID1);
+            //                            bd2 = data.getBead(bdID2);
+            //                            ///////Jointかunderかoverかで変わる
+            //                            ///overならbd1を採用し、underならbd2を採用する
+            //                            if (data.over_crossing)
+            //                            {
+            //                                bd1.c = 2;
+            //                                bd1.Joint = true;
+            //                                bd1.u1 = bd2n1;
+            //                                bd1.u2 = bd2n2;
+            //                                // bd1.c = 4;
+            //                                data.removeBeadFromPoint(bdID2);
+            //                                //bd2.n1 = -1;
+            //                                //bd2.n2 = -1;
+            //                                //bd2.x = bd2.y = -1f;
+            //                                //bd2.c = -1;
 
-        //                                Bead bd11 = data.getBead(bd2n1);
-        //                                if (bd11.n1 == bdID2)
-        //                                {
-        //                                    bd11.n1 = bdID1;
-        //                                }
-        //                                else if (bd11.n2 == bdID2)
-        //                                {
-        //                                    bd11.n2 = bdID1;
-        //                                }
-        //                                Bead bd12 = data.getBead(bd2n2);
-        //                                if (bd12.n1 == bdID2)
-        //                                {
-        //                                    bd12.n1 = bdID1;
-        //                                }
-        //                                else if (bd12.n2 == bdID2)
-        //                                {
-        //                                    bd12.n2 = bdID1;
-        //                                }
-        //                            }
-        //                            else
-        //                            {
-        //                                bd2.c = 2;
-        //                                bd2.Joint = true;
-        //                                bd2.u1 = bd1n1;
-        //                                bd2.u2 = bd1n2;
-        //                                //bd2.c = 4;
-        //                                data.removeBeadFromPoint(bdID1);
-        //                                //bd1.n1 = -1;
-        //                                //bd1.n2 = -1;
-        //                                //bd1.x = bd1.y = -1f;
-        //                                //bd1.c = -1;
+            //                                Bead bd11 = data.getBead(bd2n1);
+            //                                if (bd11.n1 == bdID2)
+            //                                {
+            //                                    bd11.n1 = bdID1;
+            //                                }
+            //                                else if (bd11.n2 == bdID2)
+            //                                {
+            //                                    bd11.n2 = bdID1;
+            //                                }
+            //                                Bead bd12 = data.getBead(bd2n2);
+            //                                if (bd12.n1 == bdID2)
+            //                                {
+            //                                    bd12.n1 = bdID1;
+            //                                }
+            //                                else if (bd12.n2 == bdID2)
+            //                                {
+            //                                    bd12.n2 = bdID1;
+            //                                }
+            //                            }
+            //                            else
+            //                            {
+            //                                bd2.c = 2;
+            //                                bd2.Joint = true;
+            //                                bd2.u1 = bd1n1;
+            //                                bd2.u2 = bd1n2;
+            //                                //bd2.c = 4;
+            //                                data.removeBeadFromPoint(bdID1);
+            //                                //bd1.n1 = -1;
+            //                                //bd1.n2 = -1;
+            //                                //bd1.x = bd1.y = -1f;
+            //                                //bd1.c = -1;
 
-        //                                Bead bd11 = data.getBead(bd1n1);
-        //                                if (bd11.n1 == bdID1)
-        //                                {
-        //                                    bd11.n1 = bdID2;
-        //                                }
-        //                                else if (bd11.n2 == bdID1)
-        //                                {
-        //                                    bd11.n2 = bdID2;
-        //                                }
-        //                                Bead bd12 = data.getBead(bd1n2);
-        //                                if (bd12.n1 == bdID1)
-        //                                {
-        //                                    bd12.n1 = bdID2;
-        //                                }
-        //                                else if (bd12.n2 == bdID1)
-        //                                {
-        //                                    bd12.n2 = bdID2;
-        //                                }
-        //                            }
-        //                        }
-        //                        //  }
-        //                        //}
-        //                        //終了条件の確認
-        //                    }
-        //                }
-        //            }
-        //        }
-        //    }
-        //}
-        //boolean OK = true;//図が完了しているかどうかのフラグ。
-        //for (int bdID = 0; bdID < data.points.size(); bdID++)
-        //{
-        //    Bead bd = data.getBead(bdID);
-        //    if (bd != null)
-        //    {
-        //        if (bd.n1 != -1 || bd.n2 != -1 || bd.u1 != -1 || bd.u2 != -1)
-        //        {
-        //            if (bd.c != 2 && bd.c != 4)
-        //            {
-        //                OK = false;
-        //                return;
-        //            }
-        //        }
-        //    }
-        //}
-        //if (OK)
-        //{
-        //    println("complete figure");
-        //    //data.points.clear();
-        //    //for (int bdID=0; bdID<edit.beads.size(); bdID++) {
-        //    //  Bead bd = edit.beads.get(bdID);
-        //    //  if (bd.c==4) {
-        //    //    bd.c=2;
-        //    //    bd.Joint = true;
-        //    //  } else if (bd.c==2) {
-        //    //    bd.Joint = false;
-        //    //  }
-        //    //  data.points.add(bd);
-        //    //}
+            //                                Bead bd11 = data.getBead(bd1n1);
+            //                                if (bd11.n1 == bdID1)
+            //                                {
+            //                                    bd11.n1 = bdID2;
+            //                                }
+            //                                else if (bd11.n2 == bdID1)
+            //                                {
+            //                                    bd11.n2 = bdID2;
+            //                                }
+            //                                Bead bd12 = data.getBead(bd1n2);
+            //                                if (bd12.n1 == bdID1)
+            //                                {
+            //                                    bd12.n1 = bdID2;
+            //                                }
+            //                                else if (bd12.n2 == bdID1)
+            //                                {
+            //                                    bd12.n2 = bdID2;
+            //                                }
+            //                            }
+            //                        }
+            //                        //  }
+            //                        //}
+            //                        //終了条件の確認
+            //                    }
+            //                }
+            //            }
+            //        }
+            //    }
+            //}
+            //boolean OK = true;//図が完了しているかどうかのフラグ。
+            //for (int bdID = 0; bdID < data.points.size(); bdID++)
+            //{
+            //    Bead bd = data.getBead(bdID);
+            //    if (bd != null)
+            //    {
+            //        if (bd.n1 != -1 || bd.n2 != -1 || bd.u1 != -1 || bd.u2 != -1)
+            //        {
+            //            if (bd.c != 2 && bd.c != 4)
+            //            {
+            //                OK = false;
+            //                return;
+            //            }
+            //        }
+            //    }
+            //}
+            //if (OK)
+            //{
+            //    println("complete figure");
+            //    //data.points.clear();
+            //    //for (int bdID=0; bdID<edit.beads.size(); bdID++) {
+            //    //  Bead bd = edit.beads.get(bdID);
+            //    //  if (bd.c==4) {
+            //    //    bd.c=2;
+            //    //    bd.Joint = true;
+            //    //  } else if (bd.c==2) {
+            //    //    bd.Joint = false;
+            //    //  }
+            //    //  data.points.add(bd);
+            //    //}
 
-        //    graph.make_data_graph();
-        //    Draw.beads();
-        //}// OK=falseならば、図が未完成なので、さらなるトレースを待つ。
+            //    graph.make_data_graph();
+            //    Draw.beads();
+            //}// OK=falseならば、図が未完成なので、さらなるトレースを待つ。
     }
 
 

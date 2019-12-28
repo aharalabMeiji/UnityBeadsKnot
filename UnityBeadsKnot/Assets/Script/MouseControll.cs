@@ -157,7 +157,7 @@ public class MouseControll : MonoBehaviour {
             for(int n=0; n<thisKnot.AllBeads.Length; n++)
             {
                 //ノードを見つけたらreturn 
-                if ((MouseDownVec - thisKnot.AllBeads[n].Position).magnitude < 0.25f)
+                if ((MouseDownVec - thisKnot.AllBeads[n].Position).magnitude < 0.15f)
                 {
                     StartFreeCurve = thisKnot.AllBeads[n].Position;
                     StartFreeCurveBead = thisKnot.AllBeads[n];
@@ -291,7 +291,7 @@ public class MouseControll : MonoBehaviour {
         if (Display.IsDrawKnotMode())
         {
             if (DraggedNode != null)
-            {
+            {//ノードにマウスダウンしたとき
                 if ((MouseUpVec - MouseDownVec).magnitude < 0.05f && DraggedNode.ThisBead.Joint)
                 {// クリック認定 -> クロシングチェンジ
                  //ビーズのデータの変更
@@ -323,6 +323,7 @@ public class MouseControll : MonoBehaviour {
                         }
                     }
                 }
+                //ノードをドラッグしたときは後処理なし
                 DraggedNode = null;
             }
             // フリーカーブを描いているとき
@@ -353,7 +354,7 @@ public class MouseControll : MonoBehaviour {
                     NoProc = true;
                     for(int b=0; b<thisKnot.AllBeads.Length; b++)
                     {
-                        if((thisKnot.AllBeads[b].Position - MouseUpVec).magnitude < 0.2f)
+                        if((thisKnot.AllBeads[b].Position - MouseUpVec).magnitude < 0.15f)
                         {
                             NoProc = false;
                             // 終了ビーズを記録
