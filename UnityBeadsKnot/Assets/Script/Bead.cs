@@ -28,12 +28,12 @@ public class Bead : MonoBehaviour {
         SpriteRenderer SR = GetComponent<SpriteRenderer>();
         if(Joint || MidJoint)
         {
-            gameObject.transform.localScale = new Vector3(0.06f, 0.06f, 1f);
+            gameObject.transform.localScale = new Vector3(0.05f, 0.05f, 1f);
             SR.color = Color.green;
         }
         else
         {
-            gameObject.transform.localScale = new Vector3(0.04f, 0.04f, 1f);
+            gameObject.transform.localScale = new Vector3(0.015f, 0.015f, 1f);
             SR.color = new Color(0.9f,0.9f,0.9f);
         }
     }

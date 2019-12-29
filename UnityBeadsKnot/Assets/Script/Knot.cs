@@ -601,7 +601,7 @@ public class Knot : MonoBehaviour
 
     void UpdateBeadsOnEdge(Edge ed)
     {
-        float beadsInterval = 0.2f;
+        float beadsInterval = 0.15f;
         Node ANode = ed.ANode;// うまくいかないようだったらed.ANodeIDから計算する
         Node BNode = ed.BNode;// うまくいかないようだったらed.ANodeIDから計算する
         if (ANode == null || BNode == null)
