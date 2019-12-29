@@ -15,7 +15,7 @@ public class Knot : MonoBehaviour
     void Start()
     {
         // サンプルデータの直接代入
-        CreateGraphFromData(Constant.NodesSample, Constant.EdgesSample);
+        CreateFromNodeEdge(Constant.NodesSample, Constant.EdgesSample);
         // 以下、たぶん無意味
         GetAllThings();
     }
@@ -157,7 +157,7 @@ public class Knot : MonoBehaviour
         }
     }
 
-    void CreateGraphFromData(double[,] nodes, int[,] edges)
+    void CreateFromNodeEdge(double[,] nodes, int[,] edges)
     {
         int nodesSize = nodes.Length / 7;
         ClearAllNodes();
@@ -264,9 +264,33 @@ public class Knot : MonoBehaviour
         //            Draw.beads();// drawモードの変更
         AdjustEdgeLine();
     }
-
+    /// <summary>
+    /// ビーズのデータからノードとエッジのデータを構成する
+    /// </summary>
     public void CreateNodesEdgesFromBeads()
     {
+        //エッジごとにビーズの個数を数え、一定数以上であればMidJointを追加する。
+        for (int i = 0; i < AllBeads.Length; i++)
+        {
+            Bead bd = AllBeads[i];
+            if (bd.Joint)
+            {
+                for(int r=0; r<4; r++)
+                {
+                    int edgeLength1 = CountBeadsOnEdge(bd, r, false);
+                    int edgeLength2 = CountBeadsOnEdge(bd, r, true);
+                    if (edgeLength1 == edgeLength2)// midJointがないエッジ
+                    {
+                        PairInt end = FindEndOfEdgeOnBead(bd, r);
+                        if (end.first == bd.ID || edgeLength1 >15)// ループ、または長いエッジ
+                        {
+                            Bead bd2 = GetBeadOnEdge(bd, r, (int)(edgeLength1 / 2));
+                            bd2.MidJoint = true;// //midJoint追加
+                        }
+                    }
+                }
+            }
+        }
         AllBeads = FindObjectsOfType<Bead>();
         //Nodesを一度クリアする
         ClearAllNodes();
@@ -320,7 +344,8 @@ public class Knot : MonoBehaviour
                     PairInt br = FindEndOfEdgeOnBead(bd, r, true);
                     // BeadIDからノードのIDを割り出す
                     int nd2 = GetNodeIDFromBeadID(br.first);
-                    if (br.first != -1 && (nd.ID < nd2 || (nd.ID==nd2 && r < br.second) ) )// 重複をはぶく工夫
+                    if (br.first != -1 && nd.ID <= nd2 )// 重複をはぶく工夫
+                        //if (br.first != -1 && (nd.ID < nd2 || (nd.ID == nd2 && r < br.second)))// 重複をはぶく工夫
                     {
                         Edge ed = AddEdge(nd.ID, nd2, r, br.second, edgeID);
                         edgeID++;
@@ -1469,6 +1494,7 @@ public class Knot : MonoBehaviour
                 Bd2.NumOfNbhd = 0;
             }
         }
+        //ビーズごとの「お隣さま」を数える
         AllBeads = AllBeads = this.GetComponentsInChildren<Bead>();
         for (int b = 0; b < AllBeads.Length; b++)
         {

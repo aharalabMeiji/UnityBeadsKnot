@@ -275,6 +275,7 @@ public class Edge : MonoBehaviour
         t1 /= 10f;
         t2 /= 10f;
 
+        if (th1 < 0 || 36 <= th1 || th2 < 0 || 36 <= th2) Debug.LogError(th1 + "," + th2);
         float a10 = (float)Constant.len1[th1,th2];
         float a11 = (float)Constant.len1[(th1 + 1) % 36,th2];
         float a12 = (float)Constant.len1[th1,(th2 + 1) % 36];
