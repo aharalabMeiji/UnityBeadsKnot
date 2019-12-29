@@ -383,7 +383,7 @@ public class Knot : MonoBehaviour
                     if (br.first != -1 && nd.ID <= nd2 )// 重複をはぶく工夫
                         //if (br.first != -1 && (nd.ID < nd2 || (nd.ID == nd2 && r < br.second)))// 重複をはぶく工夫
                     {
-                        Edge ed = AddEdge(nd.ID, nd2, r, br.second, edgeID);
+                        /*Edge ed = */AddEdge(nd.ID, nd2, r, br.second, edgeID);
                         edgeID++;
                         //Debug.Log(nd.ID + "," + r + "," + nd2 + "," + br.second + ":" + edgeID);
                     }
@@ -545,7 +545,7 @@ public class Knot : MonoBehaviour
         Vector3 v4 = b.Position;
         float result =0f;
         Vector3 now = v1;
-        Vector3 next = v1;
+        Vector3 next;
         for (float t=0.05f; t<1.001f; t += 0.05f)
         {
             next = GetBezier(v1, v2, v3, v4, t);
@@ -562,7 +562,7 @@ public class Knot : MonoBehaviour
     public void Modify()
     {
         //Nodeのr[]を最適化する
-        Debug.Log("Modify starts.");
+        //Debug.Log("Modify starts.");
         AllEdges = FindObjectsOfType<Edge>();
         for (int i=0; i<AllEdges.Length; i++)
         {
@@ -757,7 +757,7 @@ public class Knot : MonoBehaviour
         {
             return -1;
         }
-        Bead Next = null;
+        Bead Next;
         Bead PreviousJoint = null;
         int MaxRepeat = AllBeads.Length;
         //以降は基本的にN1,N2しか見ない。
@@ -934,7 +934,7 @@ public class Knot : MonoBehaviour
                                 CountBeads++;
                             }
                             AllNodes = Nodes.GetComponentsInChildren<Node>();
-                            Debug.Log("AllNodes.Length = "+AllNodes.Length);
+                            Debug.Log("AllNodes.Length = " + AllNodes.Length);
                         }
                         if (phase == 2 && str.Contains("Edges"))
                         {
@@ -951,7 +951,7 @@ public class Knot : MonoBehaviour
                                 int aRID = int.Parse(lines[1]);
                                 int bID = int.Parse(lines[2]);
                                 int bRID = int.Parse(lines[3]);
-                                Debug.Log(aID+","+aRID+":"+bID+","+bRID);
+                                Debug.Log(aID + "," + aRID + ":" + bID + "," + bRID);
                                 GameObject prefab = Resources.Load<GameObject>("Prefabs/Edge");
                                 GameObject obj = Instantiate(prefab, Vector3.zero, Quaternion.identity, Edges.transform);
                                 Edge ed = obj.GetComponent<Edge>();
@@ -975,7 +975,7 @@ public class Knot : MonoBehaviour
                                 // edに対応するBeadを一つだけ作る。
                                 Bead bd = AddBead(0.5f * (ABead.Position + BBead.Position));
                                 bd.ID = CountBeads;
-                                Debug.Log("bead on edge"+bd.Position+":"+bd.ID);
+                                Debug.Log("bead on edge" + bd.Position + ":" + bd.ID);
                                 CountBeads++;
 
                                 bd.SetNU12(ABead, null, BBead, null);
@@ -1011,7 +1011,7 @@ public class Knot : MonoBehaviour
                                     node.Active = bd.Active = false;
                                     Debug.Log("Num " + n + " is not in use.");
                                 }
-                                else 
+                                else
                                 {
                                     node.MidJoint = bd.MidJoint = false;
                                     node.Joint = bd.Joint = false;
@@ -1055,6 +1055,21 @@ public class Knot : MonoBehaviour
     }
 
 
+    void SaveTxtFile(string filePath)
+    {
+        try
+        {
+            using (StreamWriter streamWriter = new StreamWriter(filePath, append: true))
+            {
+                streamWriter.WriteLine("文字列の追加"); 
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.LogError(e.Data);
+            Debug.LogError(e.Message);
+        }
+    }
     // findOnBeads系のメソッド
     /// <summary>
     /// ビーズbから初めて、r方向へたどり、最初にMidJointかJointを見つけたら、そのビーズIDとr方向をペアにして返す。
@@ -1067,7 +1082,7 @@ public class Knot : MonoBehaviour
         {
             return new PairInt(-1, -1);// 失敗
         }
-        Bead Next = null;
+        Bead Next;
         int MaxRepeat = AllBeads.Length;
         //以降は基本的にN1,N2しか見ない。
         for(int repeat=0; repeat<MaxRepeat; repeat++)
@@ -1119,7 +1134,7 @@ public class Knot : MonoBehaviour
             return 0;// 失敗
         }
         int count = 0;
-        Bead Next = null;
+        Bead Next;
         int MaxRepeat = AllBeads.Length;
         //以降は基本的にN1,N2しか見ない。
         for (int repeat = 0; repeat < MaxRepeat; repeat++)
@@ -1160,7 +1175,7 @@ public class Knot : MonoBehaviour
             return null;// 失敗
         }
         int count = c;
-        Bead Next = null;
+        Bead Next;
         int MaxRepeat = AllBeads.Length;
         //以降は基本的にN1,N2しか見ない。
         for (int repeat = 0; repeat < MaxRepeat; repeat++)
@@ -1201,7 +1216,7 @@ public class Knot : MonoBehaviour
         {
             return;// 失敗
         }
-        Bead Next = null;
+        Bead Next;
         Prev.NumOfNbhd = 1;
         if (Prev.N1 == StartFreeCurveBeadN1) Prev.N1 = Prev.N2;
         Prev.N2 = null;
@@ -1356,7 +1371,7 @@ public class Knot : MonoBehaviour
     {
         // まず、traceをすべてbeadに置き換える。（両端は除く）
         //Debug.Log("FreeLoopをbeadsに変換");
-        int startID = startBead.ID;
+        //int startID = startBead.ID;
         int freeLoopStartBeadID = GetMaxIDOfBead();// 最初の番号は freeLoopStartBeadID+1 
         if (startBead == null || endBead == null)
         {
@@ -1453,7 +1468,7 @@ public class Knot : MonoBehaviour
                 if (Bd2 == null) continue;
                 Bead Bd2N1 = Bd2.N1;
                 Bead Bd2N2 = Bd2.N2;
-                int difference = b2 - b1;
+                //int difference = b2 - b1;
                 if (Bd1N1 != Bd2 && Bd1N2 != Bd2 && Bd2N1 != Bd1 && Bd2N2 != Bd1)
                 {// そもそも異なる場所である保証。
                     float x1 = Bd1N1.Position.x;

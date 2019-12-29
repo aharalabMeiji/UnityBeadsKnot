@@ -226,6 +226,7 @@ public class MouseControll : MonoBehaviour {
                 thisKnot.UpdateBeadsAtNode(DraggedNode);
                 // ドラッグしているノードについて、回転して適正な位置にする。
                 // thisKnot.UpdateNodeRotation();
+                thisKnot.Modify();
             }
             //通常モードでフリーカーブを描いているとき
             else if (StartFreeCurveBead != null)
@@ -575,7 +576,7 @@ public class MouseControll : MonoBehaviour {
                                     Bead midJointBead = thisKnot.GetBeadOnEdge(bd, r1, Mathf.FloorToInt(count / 2));
                                     if (midJointBead != null)
                                         midJointBead.MidJoint = true;
-                                    Debug.Log(bd.ID + "," + r1 + "->" + br2.first + "," + br2.second + "(" + count + ")");
+                                    //Debug.Log(bd.ID + "," + r1 + "->" + br2.first + "," + br2.second + "(" + count + ")");
                                 }
                             }
                         }
