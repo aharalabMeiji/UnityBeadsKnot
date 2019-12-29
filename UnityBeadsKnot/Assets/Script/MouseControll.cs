@@ -293,7 +293,7 @@ public class MouseControll : MonoBehaviour {
             if (DraggedNode != null)
             {//ノードにマウスダウンしたとき
                 if ((MouseUpVec - MouseDownVec).magnitude < 0.05f && DraggedNode.ThisBead.Joint)
-                {// クリック認定 -> クロシングチェンジ
+                {// ノードをクリック認定 -> クロシングチェンジ
                  //ビーズのデータの変更
                     Bead bd = DraggedNode.ThisBead;
                     Bead tmp = bd.N1;

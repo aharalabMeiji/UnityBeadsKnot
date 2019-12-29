@@ -721,6 +721,7 @@ public class Knot : MonoBehaviour
             return -1;
         }
         Bead Next = null;
+        Bead PreviousJoint = null;
         int MaxRepeat = AllBeads.Length;
         //以降は基本的にN1,N2しか見ない。
         for (int repeat = 0; repeat < MaxRepeat; repeat++)
@@ -729,8 +730,20 @@ public class Knot : MonoBehaviour
             {
                 if (Now.Joint)
                 {
-                    if (overUnder == 0 || overUnder == 1) overUnder = 1;
-                    else return -1;
+                    if (overUnder == 0 || overUnder == 1)
+                    {
+                        PreviousJoint = Now;
+                        overUnder = 1;
+                    }
+                    else if (PreviousJoint == Now && overUnder == 2)
+                    {
+                        PreviousJoint = null;
+                        overUnder = 0;
+                    }
+                    else
+                    {
+                        return -1;
+                    }
                 }
                 Next = Now.N2;
             }
@@ -738,8 +751,20 @@ public class Knot : MonoBehaviour
             {
                 if (Now.Joint)
                 {
-                    if (overUnder == 0 || overUnder == 1) overUnder = 1;
-                    else return -1;
+                    if (overUnder == 0 || overUnder == 1)
+                    {
+                        PreviousJoint = Now;
+                        overUnder = 1;
+                    }
+                    else if (PreviousJoint == Now && overUnder == 2)
+                    {
+                        PreviousJoint = null;
+                        overUnder = 0;
+                    }
+                    else
+                    {
+                        return -1;
+                    }
                 }
                 Next = Now.N1;
             }
@@ -747,8 +772,20 @@ public class Knot : MonoBehaviour
             {
                 if (Now.Joint)
                 {
-                    if (overUnder == 0 || overUnder == 2) overUnder = 2;
-                    else return -1;
+                    if (overUnder == 0 || overUnder == 2)
+                    {
+                        PreviousJoint = Now;
+                        overUnder = 2;
+                    }
+                    else if (PreviousJoint == Now && overUnder == 1)
+                    {
+                        PreviousJoint = null;
+                        overUnder = 0;
+                    }
+                    else
+                    {
+                        return -1;
+                    }
                 }
                 Next = Now.U2;
             }
@@ -756,8 +793,20 @@ public class Knot : MonoBehaviour
             {
                 if (Now.Joint)
                 {
-                    if (overUnder == 0 || overUnder == 2) overUnder = 2;
-                    else return -1;
+                    if (overUnder == 0 || overUnder == 2)
+                    {
+                        PreviousJoint = Now;
+                        overUnder = 2;
+                    }
+                    else if (PreviousJoint == Now && overUnder == 1)
+                    {
+                        PreviousJoint = null;
+                        overUnder = 0;
+                    }
+                    else
+                    {
+                        return -1;
+                    }
                 }
                 Next = Now.U1;
             }
@@ -1140,6 +1189,16 @@ public class Knot : MonoBehaviour
                 }
                 else
                 {
+                    if (Now.MidJoint)
+                    {
+                        int ndID = this.GetNodeIDFromBeadID(Now.ID);
+                        Node nd = GetNodeByID(ndID);
+                        if (nd != null)
+                        {
+                            nd.MidJoint = false;
+                            nd.Active = false;
+                        }
+                    }
                     // Nowを使用不可にする。
                     Now.Active = false;
                 }
@@ -1162,6 +1221,16 @@ public class Knot : MonoBehaviour
                 }
                 else
                 {
+                    if (Now.MidJoint)
+                    {
+                        int ndID = this.GetNodeIDFromBeadID(Now.ID);
+                        Node nd = GetNodeByID(ndID);
+                        if (nd != null)
+                        {
+                            nd.MidJoint = false;
+                            nd.Active = false;
+                        }
+                    }
                     // Nowを使用不可にする。
                     Now.Active = false;
                 }
