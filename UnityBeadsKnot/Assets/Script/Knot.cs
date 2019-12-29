@@ -24,6 +24,9 @@ public class Knot : MonoBehaviour
     void Update()
     {
         AdjustDisplay();
+        ClearAllNonactiveEdges();
+        ClearAllNonactiveNodes();
+        ClearAllNonactiveBeads();
     }
 
     public Bead AddBead(Vector3 v)
@@ -136,6 +139,19 @@ public class Knot : MonoBehaviour
             Destroy(AllNodes[i].gameObject);
         }
     }
+    public void ClearAllNonactiveNodes()
+    {
+        AllNodes = FindObjectsOfType<Node>();
+        if (AllNodes.Length == 0) return;
+        for (int i = AllNodes.Length - 1; i >= 0; i--)
+        {
+            if (!AllNodes[i].Active)
+            {
+                AllNodes[i].gameObject.SetActive(false);
+                Destroy(AllNodes[i].gameObject);
+            }
+        }
+    }
 
     public void ClearAllEdges()
     {
@@ -146,6 +162,17 @@ public class Knot : MonoBehaviour
             Destroy(AllEdges[i].gameObject);
         }
     }
+    public void ClearAllNonactiveEdges()
+    {
+        AllEdges = FindObjectsOfType<Edge>();
+        for (int i = AllEdges.Length - 1; i >= 0; i--)
+        {
+            if (!AllEdges[i].Active) { 
+                AllEdges[i].gameObject.SetActive(false);
+                Destroy(AllEdges[i].gameObject);
+            }
+        }
+    }
 
     public void ClearAllBeads()
     {
@@ -154,6 +181,18 @@ public class Knot : MonoBehaviour
         {
             AllBeads[i].gameObject.SetActive(false);
             Destroy(AllBeads[i].gameObject);
+        }
+    }
+    public void ClearAllNonactiveBeads()
+    {
+        AllBeads = FindObjectsOfType<Bead>();
+        for (int i = AllBeads.Length - 1; i >= 0; i--)
+        {
+            if (!AllBeads[i].Active)
+            {
+                AllBeads[i].gameObject.SetActive(false);
+                Destroy(AllBeads[i].gameObject);
+            }
         }
     }
 
@@ -241,9 +280,6 @@ public class Knot : MonoBehaviour
                 node.MidJoint = bd.MidJoint = false;
                 node.Joint = bd.Joint = false;
                 node.Active = bd.Active = false;
-                node.gameObject.SetActive(false);
-                bd.gameObject.SetActive(false);
-
             }
             else 
             {
@@ -299,7 +335,7 @@ public class Knot : MonoBehaviour
         for (int i = 0; i < AllBeads.Length; i++)
         {
             Bead bd = AllBeads[i];
-            if (bd.Joint)
+            if (bd.Active && bd.Joint)
             {
                 Node nd = AddNode(bd.Position, nodeID);
                 nodeID++;
@@ -315,7 +351,7 @@ public class Knot : MonoBehaviour
         for (int i = 0; i < AllBeads.Length; i++)
         {
             Bead bd = AllBeads[i];
-            if (bd.MidJoint)
+            if (bd.Active && bd.MidJoint)
             {
                 Node nd = AddNode(bd.Position, nodeID);
                 nodeID++;
@@ -468,21 +504,6 @@ public class Knot : MonoBehaviour
     }
 
     /// <summary>
-    ///よぶんなビーズを完全消去 
-    /// </summary>
-    public void DeleteAllNonactiveBeads() {
-        GetAllThings();
-        for (int i = AllBeads.Length-1; i >=0; i-- )
-        {
-            if(AllBeads[i].Active == false)
-            {
-                GameObject obj = AllBeads[i].gameObject;
-                obj.SetActive(false);
-                Destroy(obj);
-            }
-        }
-    }
-    /// <summary>
     /// ビーズIDの最大値を求める
     /// </summary>
     /// <returns></returns>
@@ -630,7 +651,7 @@ public class Knot : MonoBehaviour
                 Bead bd3 = (bd2.GetNU12(0).ID == ABead.ID) ? bd2.GetNU12(2) : bd2.GetNU12(0);
                 //Debug.Log("delete beads" + ABead.ID + " " + bd2.ID + " " + bd3.ID);
                 // bd2 を無効にする
-                bd2.SetActive(false);
+                bd2.Active = false;
                 ABead.SetNU12(ed.ANodeRID, bd3);
                 if (bd3.GetNU12(0) == bd2)
                     bd3.SetNU12(0, ABead);
@@ -971,14 +992,14 @@ public class Knot : MonoBehaviour
                                 if (bd.N1 != null && bd.N2 != null && bd.U1 == null && bd.U2 == null)
                                 {
                                     bd.NumOfNbhd = 2;
-                                    Debug.Log(bd.ID + ":" + bd.N1.ID + "," + bd.N2.ID);
+                                    //Debug.Log(bd.ID + ":" + bd.N1.ID + "," + bd.N2.ID);
                                     node.MidJoint = bd.MidJoint = true;
                                     node.Joint = bd.Joint = false;
                                 }
                                 else if (bd.N1 != null && bd.N2 != null && bd.U1 != null && bd.U2 != null)
                                 {
                                     bd.NumOfNbhd = 4;
-                                    Debug.Log(bd.ID + ":" + bd.N1.ID + "," + bd.N2.ID + "," + bd.U1.ID + "," + bd.U2.ID);
+                                    //Debug.Log(bd.ID + ":" + bd.N1.ID + "," + bd.N2.ID + "," + bd.U1.ID + "," + bd.U2.ID);
                                     node.MidJoint = bd.MidJoint = false;
                                     node.Joint = bd.Joint = true;
                                 }
@@ -989,8 +1010,6 @@ public class Knot : MonoBehaviour
                                     node.Joint = bd.Joint = false;
                                     node.Active = bd.Active = false;
                                     Debug.Log("Num " + n + " is not in use.");
-                                    bd.gameObject.SetActive(false);
-                                    node.gameObject.SetActive(false);
                                 }
                                 else 
                                 {
@@ -1001,7 +1020,10 @@ public class Knot : MonoBehaviour
                                 }
                             }
                             GetAllThings();
+                            // BeadsからNodeEdgeを更新する
+                            //CreateNodesEdgesFromBeads();
                             //
+                            Modify();
                             UpdateBeads();
                             //グラフの形を整える。現状ではR[]を整えるだけ。
                             //
@@ -1208,11 +1230,16 @@ public class Knot : MonoBehaviour
                     if (Now.MidJoint)
                     {
                         int ndID = this.GetNodeIDFromBeadID(Now.ID);
+                        Debug.LogWarning("Id "+ndID+" will be deleted");
                         Node nd = GetNodeByID(ndID);
                         if (nd != null)
                         {
                             nd.MidJoint = false;
                             nd.Active = false;
+                        }
+                        else
+                        {
+                            Debug.LogError("DeleteBeadsFromTo error : no Node for the bead");
                         }
                     }
                     // Nowを使用不可にする。
@@ -1240,11 +1267,16 @@ public class Knot : MonoBehaviour
                     if (Now.MidJoint)
                     {
                         int ndID = this.GetNodeIDFromBeadID(Now.ID);
+                        Debug.LogWarning("Id " + ndID + " will be deleted");
                         Node nd = GetNodeByID(ndID);
                         if (nd != null)
                         {
                             nd.MidJoint = false;
                             nd.Active = false;
+                        }
+                        else
+                        {
+                            Debug.LogError("DeleteBeadsFromTo error : no Node for the bead");
                         }
                     }
                     // Nowを使用不可にする。

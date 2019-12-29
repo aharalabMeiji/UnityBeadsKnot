@@ -554,7 +554,6 @@ public class MouseControll : MonoBehaviour {
                         thisKnot.AllBeads[b2 + 1].N2 = bd1;
                         //消去
                         bd2.Active = false;// 
-                        bd2.gameObject.SetActive(false);
                     }
                     thisKnot.AllBeads = FindObjectsOfType<Bead>();
                     freeCurveSize = thisKnot.AllBeads.Length;
@@ -582,7 +581,7 @@ public class MouseControll : MonoBehaviour {
                         }
                     }
 
-                    // Nodeを追加する
+                    // BeadsからNodeEdgeを更新する
                     thisKnot.CreateNodesEdgesFromBeads();
                     // 形を整える
                     thisKnot.GetAllThings();
@@ -698,6 +697,6 @@ public class MouseControll : MonoBehaviour {
 
     void KeyCodeQ()
     {
-        thisKnot.DeleteAllNonactiveBeads();
+        thisKnot.ClearAllNonactiveBeads();
     }
 }

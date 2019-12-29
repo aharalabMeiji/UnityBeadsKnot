@@ -36,14 +36,6 @@ public class Bead : MonoBehaviour {
             gameObject.transform.localScale = new Vector3(0.04f, 0.04f, 1f);
             SR.color = new Color(0.9f,0.9f,0.9f);
         }
-        if (Active)
-        {// 生き
-            gameObject.SetActive(true);
-        }
-        else
-        {// ５６
-            gameObject.SetActive(false);
-        }
     }
 
     public int GetRID(Bead bd)
@@ -53,14 +45,6 @@ public class Bead : MonoBehaviour {
         if (N2 == bd) return 2;
         if (U2 == bd) return 3;
         return -1;
-    }
-    public void SetActive(bool active)
-    {
-        Active = active;
-    }
-    public void SetPosition(Vector3 vec)
-    {
-        Position = vec;
     }
 
     public void SetNU12(int RID, Bead bd)

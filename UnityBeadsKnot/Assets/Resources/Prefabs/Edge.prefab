@@ -145,6 +145,7 @@ MonoBehaviour:
   ANodeRID: 0
   BNodeRID: 0
   ID: 0
+  ParentKnot: {fileID: 0}
   ANode: {fileID: 0}
   BNode: {fileID: 0}
-  inUse: 0
+  Active: 1
