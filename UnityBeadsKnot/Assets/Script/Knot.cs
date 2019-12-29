@@ -1055,13 +1055,43 @@ public class Knot : MonoBehaviour
     }
 
 
-    void SaveTxtFile(string filePath)
+    public void SaveTxtFile(string filePath)
     {
         try
         {
+            GetAllThings();
             using (StreamWriter streamWriter = new StreamWriter(filePath, append: true))
             {
-                streamWriter.WriteLine("文字列の追加"); 
+                streamWriter.WriteLine("BeadsKnot,0");
+                int NumberOfNodes = AllNodes.Length;
+                streamWriter.WriteLine("Nodes," + NumberOfNodes);
+                for (int i = 0; i < NumberOfNodes; i++)
+                {
+                    Node nd = AllNodes[i];
+                    streamWriter.WriteLine(""
+                      + (100f * nd.Position.x + 500f) + ","
+                        + (-100f * nd.Position.y + 500f) + ","
+                        + nd.Theta + ","
+                        + (100f * nd.R[0]) + ","
+                        + (100f * nd.R[1]) + ","
+                        + (100f * nd.R[2]) + ","
+                        + (100f * nd.R[3])
+                        );
+                }
+                int NumberOfEdges = AllEdges.Length;
+                streamWriter.WriteLine("Edges," + NumberOfEdges);
+                for (int i = 0; i < NumberOfEdges; i++)
+                {
+                    Edge ed = AllEdges[i];
+                    streamWriter.WriteLine(""
+                        + ed.ANodeID + ","
+                        + ed.ANodeRID + ","
+                        + ed.BNodeID + ","
+                        + ed.BNodeRID
+                        );
+                }
+                streamWriter.WriteLine("Region,0");
+                streamWriter.WriteLine("BeadsKnotEnd");
             }
         }
         catch (Exception e)

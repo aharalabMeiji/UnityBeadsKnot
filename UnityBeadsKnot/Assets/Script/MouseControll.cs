@@ -648,9 +648,9 @@ public class MouseControll : MonoBehaviour {
             thisMenu.HideMenu();
             Display.SetDrawKnotMode();
         }
-        else if (Input.GetKeyDown(KeyCode.Q))
+        else if (Input.GetKeyDown(KeyCode.S))
         {
-            KeyCodeQ();
+            KeyCodeS();
             thisMenu.HideMenu();
             Display.SetDrawKnotMode();
         }
@@ -696,8 +696,10 @@ public class MouseControll : MonoBehaviour {
         // OpenBeadsKnotFile(string filename)
     }
 
-    void KeyCodeQ()
+    void KeyCodeS()
     {
-        thisKnot.ClearAllNonactiveBeads();
+        string filePath = Crosstales.FB.FileBrowser.SaveFile( "Samples", "txt");
+        Debug.Log(filePath);
+        thisKnot.SaveTxtFile(filePath);
     }
 }
