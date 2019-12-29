@@ -466,6 +466,22 @@ public class Knot : MonoBehaviour
         Vector3 v234 = (1f - t) * v23 + t * v34;
         return (1f - t) * v123 + t * v234;
     }
+
+    /// <summary>
+    ///よぶんなビーズを完全消去 
+    /// </summary>
+    public void DeleteAllNonactiveBeads() {
+        GetAllThings();
+        for (int i = AllBeads.Length-1; i >=0; i-- )
+        {
+            if(AllBeads[i].Active == false)
+            {
+                GameObject obj = AllBeads[i].gameObject;
+                obj.SetActive(false);
+                Destroy(obj);
+            }
+        }
+    }
     /// <summary>
     /// ビーズIDの最大値を求める
     /// </summary>

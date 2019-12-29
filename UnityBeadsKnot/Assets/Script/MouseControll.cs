@@ -230,10 +230,16 @@ public class MouseControll : MonoBehaviour {
             //通常モードでフリーカーブを描いているとき
             else if (StartFreeCurveBead != null)
             {
-                if ((PreviousPosition - MouseDragVec).magnitude > 0.1f)
+                float dist = (PreviousPosition - MouseDragVec).magnitude;
+                if (dist > 0.1f)
                 {//少し進んだら点を追加。
                     FreeLoop freeloop = FreeLoop.GetComponent<FreeLoop>();
-                    freeloop.AddPoint2FreeCurve(MouseDragVec);
+                    int divisionNumber = Mathf.CeilToInt(dist /0.1f) ;
+                    for (int repeat = 1; repeat <= divisionNumber; repeat++)
+                    {
+                        float ratio = 1f * repeat / divisionNumber;
+                        freeloop.AddPoint2FreeCurve(PreviousPosition*(1f-ratio)+MouseDragVec*ratio);
+                    }
                     PreviousPosition = MouseDragVec;
                     //ジョイントノードの近くを通り過ぎたら、フリーカーブをやめる。
                     //ジョイントノードの近く＝ジョイントノードのこと
@@ -259,11 +265,17 @@ public class MouseControll : MonoBehaviour {
         }
         else if (Display.IsFreeLoopMode())//フリーループモード、ドラッグ中
         {
-            if((PreviousPosition - MouseDragVec).magnitude > 0.1f)
+            float dist = (PreviousPosition - MouseDragVec).magnitude;
+            if (dist > 0.1f)
                 // 未解決 // だいたい同じ方向を向いている、という条件も付けるか？
             {
                 FreeLoop freeloop = FreeLoop.GetComponent<FreeLoop>();
-                freeloop.AddPoint2FreeCurve(MouseDragVec);
+                int divisionNumber = Mathf.CeilToInt(dist / 0.1f);
+                for (int repeat = 1; repeat <= divisionNumber; repeat++)
+                {
+                    float ratio = 1f * repeat / divisionNumber;
+                    freeloop.AddPoint2FreeCurve(PreviousPosition * (1f - ratio) + MouseDragVec * ratio);
+                }
                 PreviousPosition = MouseDragVec;
                 // スタート地点に近ければ、画面上にメッセージを出す
                 if((MouseDownVec - MouseDragVec).magnitude < 1f /* && ---- */)
@@ -574,10 +586,10 @@ public class MouseControll : MonoBehaviour {
                     thisKnot.CreateNodesEdgesFromBeads();
                     // 形を整える
                     thisKnot.GetAllThings();
-                    thisKnot.UpdateBeads();
                     thisKnot.Modify();
+                    thisKnot.UpdateBeads();
 
-                    thisKnot.AdjustEdgeLine();
+//                    thisKnot.AdjustEdgeLine();
 
                     //モードを戻す
                     Display.SetDrawKnotMode();
@@ -636,6 +648,12 @@ public class MouseControll : MonoBehaviour {
             thisMenu.HideMenu();
             Display.SetDrawKnotMode();
         }
+        else if (Input.GetKeyDown(KeyCode.Q))
+        {
+            KeyCodeQ();
+            thisMenu.HideMenu();
+            Display.SetDrawKnotMode();
+        }
     }
 
     void KeyCodeN()
@@ -676,5 +694,10 @@ public class MouseControll : MonoBehaviour {
             thisKnot.OpenTxtFile(filePath);
         }
         // OpenBeadsKnotFile(string filename)
+    }
+
+    void KeyCodeQ()
+    {
+        thisKnot.DeleteAllNonactiveBeads();
     }
 }
