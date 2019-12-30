@@ -84,7 +84,6 @@ public class PairInt
 
 public class MouseControll : MonoBehaviour {
 
-
     public  GameObject ThisKnot;
     Knot thisKnot;
     public GameObject ThisMenu;
@@ -98,7 +97,7 @@ public class MouseControll : MonoBehaviour {
     Vector3 DraggedNodeStartPosition;
     Vector3 PreviousPosition;
 
-    Vector3 StartFreeCurve;
+    private Vector3 StartFreeCurve;
     Bead StartFreeCurveBead;
     
     public static bool ModifyNode = true;
@@ -204,7 +203,7 @@ public class MouseControll : MonoBehaviour {
             if (DraggedNode != null)
             {
                 float minDist = (MouseDragVec - DraggedNodeStartPosition).magnitude;
-                int minNodeId = DraggedNode.ID;
+                //int minNodeId = DraggedNode.ID;
                 for (int n = 0; n < thisKnot.AllNodes.Length; n++)
                 {
                     Node nd = thisKnot.AllNodes[n];
@@ -229,6 +228,7 @@ public class MouseControll : MonoBehaviour {
                 thisKnot.UpdateBeadsAtNode(DraggedNode);
                 //Debug.Log("after UpdateBeadsAtNode " + thisKnot.GetNodeByID(0).ThisBead.Position);
                 //// ドラッグしているノードについて、回転して適正な位置にする。
+                thisKnot.UpdateNodeTheta(DraggedNode);
                 //// thisKnot.UpdateNodeRotation();
             }
             //通常モードでフリーカーブを描いているとき

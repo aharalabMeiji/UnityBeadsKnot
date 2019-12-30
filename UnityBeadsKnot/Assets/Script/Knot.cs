@@ -600,10 +600,30 @@ public class Knot : MonoBehaviour
         return result;
     }
 
-   /// <summary>
-   /// グラフの形を整える。ただし、これが良いとは限らない。
-   /// ビーズに戻して物理モデルで整形するという考えもある。
-   /// </summary>
+    float GetRealArclength(Edge ed)
+    {
+        Node ANode = GetNodeByID(ed.ANodeID);
+        Node BNode = GetNodeByID(ed.BNodeID);
+        Vector3 v1 = ANode.Position;
+        Vector3 v2 = ANode.GetCoordEdgeEnd(ed.ANodeID);
+        Vector3 v3 = BNode.GetCoordEdgeEnd(ed.BNodeID);
+        Vector3 v4 = BNode.Position;
+        float result = 0f;
+        Vector3 now = v1;
+        Vector3 next;
+        for (float t = 0.05f; t < 1.001f; t += 0.05f)
+        {
+            next = GetBezier(v1, v2, v3, v4, t);
+            result += (next - now).magnitude;
+            now = next;
+        }
+        return result;
+    }
+
+    /// <summary>
+    /// グラフの形を整える。ただし、これが良いとは限らない。
+    /// ビーズに戻して物理モデルで整形するという考えもある。
+    /// </summary>
     public void Modify()
     {
         //Nodeのr[]を最適化する
@@ -640,6 +660,20 @@ public class Knot : MonoBehaviour
         }
         AllBeads = FindObjectsOfType<Bead>();
 
+    }
+
+    public void UpdateBeadsAtNode(Node nd)
+    {
+        for (int e = 0; e < AllEdges.Length; e++)
+        {
+            Edge ed = AllEdges[e];
+            if (ed.ANodeID == nd.ID || ed.BNodeID == nd.ID)
+            {
+                UpdateBeadsOnEdge(ed);
+            }
+        }
+        AllBeads = FindObjectsOfType<Bead>();
+        AdjustEdgeLine();
     }
 
     void UpdateBeadsOnEdge(Edge ed)
@@ -762,23 +796,30 @@ public class Knot : MonoBehaviour
         //Debug.Log("(" + ed.ANodeID + "->" + ed.BNodeID + ") " + GetNodeByID(0).ThisBead.Position);
     }
 
-    public void UpdateBeadsAtNode(Node nd)
+    public void UpdateNodeTheta(Node nd)
     {
-        //Debug.Log("UpdateBeadsAtNode start " + GetNodeByID(0).ThisBead.Position);
-        for (int e = 0; e < AllEdges.Length; e++)
+        float localArcLength = 0;
+        Edge[] edges= new Edge[4];
+        GetAllThings();
+        for(int e=0; e<AllEdges.Length; e++)
         {
             Edge ed = AllEdges[e];
-            //Debug.Log(ed.ANodeID+","+ed.ANodeRID+":"+ed.BNodeID+","+ed.BNodeRID);
-            if (ed.ANodeID == nd.ID || ed.BNodeID == nd.ID)
+            if(ed.ANodeID == nd.ID)
             {
-                //Debug.Log("UpdateBeadsAtNode edge " + ed.ANodeID + "," + ed.ANodeRID + ":" + ed.BNodeID + "," + ed.BNodeRID + " : " + GetNodeByID(0).ThisBead.Position);
-                UpdateBeadsOnEdge(ed);
-                //Debug.Log("UpdateBeadsAtNode edge " + ed.ANodeID + "," + ed.ANodeRID + ":" + ed.BNodeID + "," + ed.BNodeRID + " : " + GetNodeByID(0).ThisBead.Position);
+                edges[ed.ANodeRID] = ed;
+                localArcLength += GetRealArclength(ed);
             }
         }
-        AllBeads = FindObjectsOfType<Bead>();
-        AdjustEdgeLine();
-        //Debug.Log("UpdateBeadsAtNode end " + GetNodeByID(0).ThisBead.Position);
+        nd.Theta += 0.05f;
+        float localArclengthPlus = 0f;
+        for(int r=0; r<4; r++)
+        {
+            if (edges[r] != null)
+            {
+                localArclengthPlus += GetRealArclength(edges[r]);
+            }
+        }
+        if (localArcLength > localArclengthPlus) return;
     }
 
     /// <summary>
