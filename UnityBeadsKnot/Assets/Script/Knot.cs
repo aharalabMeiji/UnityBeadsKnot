@@ -276,7 +276,7 @@ public class Knot : MonoBehaviour
             else if (bd.N1 == null && bd.N2 == null && bd.U1 == null && bd.U2 == null)
             {
                 bd.NumOfNbhd = 0;
-                Debug.Log("Num " + n + " is not in use.");
+                Debug.Log("Node ID " + n + " is not in use.");
                 node.MidJoint = bd.MidJoint = false;
                 node.Joint = bd.Joint = false;
                 node.Active = bd.Active = false;
@@ -292,7 +292,7 @@ public class Knot : MonoBehaviour
 
         GetAllThings();
         //グラフの形を整える。現状ではR[]を整えるだけ。
-        //Modify();
+        Modify();
         //
         UpdateBeads();
         //  CloseJointの設定を行う（マストではない）            
@@ -742,23 +742,25 @@ public class Knot : MonoBehaviour
     }
 
     /// <summary>
-    /// カーブに沿ってたどる。
-    /// オーバークロシングのみ、またはアンダークロシングのみでゴールできれば1,2のどちらかを返す。
+    /// <para>カーブに沿ってたどる。</para>
+    /// <para>第1成分：クロシングがなければ0、オーバークロシングのみなら1、アンダークロシングのみでゴールできれば2</para>
+    /// <para>第2成分：ビーズ距離</para>
     /// </summary>
     /// <param name="startBd">出発するビーズ</param>
     /// <param name="goalBd">ゴールするビーズ</param>
     /// <returns>-1: illegal, 0: nothing, 1: yes for overcrossing, 2: yes for undercrossing</returns>
-    public int FindBeadAlongCurve(Bead startBd, Bead startNextBd, Bead goalBd)
+    public PairInt FindBeadAlongCurve(Bead startBd, Bead startNextBd, Bead goalBd)
     {
         Bead Prev = startBd;
         Bead Now = startNextBd;
         int overUnder = 0;// 1: Overのみ, 2:アンダーのみ
         if (Prev == null || Now == null)
         {
-            return -1;
+            return new PairInt(-1,-1);
         }
         Bead Next;
         Bead PreviousJoint = null;
+        int beadCount = 0;
         int MaxRepeat = AllBeads.Length;
         //以降は基本的にN1,N2しか見ない。
         for (int repeat = 0; repeat < MaxRepeat; repeat++)
@@ -779,7 +781,7 @@ public class Knot : MonoBehaviour
                     }
                     else
                     {
-                        return -1;
+                        return new PairInt(-1, -1);
                     }
                 }
                 Next = Now.N2;
@@ -800,7 +802,7 @@ public class Knot : MonoBehaviour
                     }
                     else
                     {
-                        return -1;
+                        return new PairInt(-1, -1);
                     }
                 }
                 Next = Now.N1;
@@ -821,7 +823,7 @@ public class Knot : MonoBehaviour
                     }
                     else
                     {
-                        return -1;
+                        return new PairInt(-1, -1);
                     }
                 }
                 Next = Now.U2;
@@ -842,7 +844,7 @@ public class Knot : MonoBehaviour
                     }
                     else
                     {
-                        return -1;
+                        return new PairInt(-1, -1);
                     }
                 }
                 Next = Now.U1;
@@ -854,12 +856,13 @@ public class Knot : MonoBehaviour
             }
             Prev = Now;
             Now = Next;
+            beadCount++;
             if (Now == goalBd || Now.ID==goalBd.ID)
             {
-                return overUnder;
+                return new PairInt(overUnder,beadCount);
             }
         }
-        return -1;// 失敗
+        return new PairInt(-1,-1);// 失敗
     }
     /// <summary>
     /// すべてのBead, Node, Edgeを消去する
@@ -941,7 +944,6 @@ public class Knot : MonoBehaviour
                             phase = 3;
                             string[] lines = str.Split(',');
                             repeat = int.Parse(lines[1]);
-                            Debug.Log(repeat);
                             ClearAllEdges();
                             for (int n = 0; n < repeat; n++)
                             {
@@ -951,7 +953,7 @@ public class Knot : MonoBehaviour
                                 int aRID = int.Parse(lines[1]);
                                 int bID = int.Parse(lines[2]);
                                 int bRID = int.Parse(lines[3]);
-                                Debug.Log(aID + "," + aRID + ":" + bID + "," + bRID);
+                                //Debug.Log(aID + "," + aRID + ":" + bID + "," + bRID);
                                 GameObject prefab = Resources.Load<GameObject>("Prefabs/Edge");
                                 GameObject obj = Instantiate(prefab, Vector3.zero, Quaternion.identity, Edges.transform);
                                 Edge ed = obj.GetComponent<Edge>();
@@ -975,13 +977,14 @@ public class Knot : MonoBehaviour
                                 // edに対応するBeadを一つだけ作る。
                                 Bead bd = AddBead(0.5f * (ABead.Position + BBead.Position));
                                 bd.ID = CountBeads;
-                                Debug.Log("bead on edge" + bd.Position + ":" + bd.ID);
+                                //Debug.Log("bead on edge" + bd.Position + ":" + bd.ID);
                                 CountBeads++;
 
                                 bd.SetNU12(ABead, null, BBead, null);
                                 ABead.SetNU12(ed.ANodeRID, bd);
                                 BBead.SetNU12(ed.BNodeRID, bd);
                             }
+                            Debug.Log("AllEdges.Length = " + AllEdges.Length);
                             for (int n = 0; n < AllNodes.Length; n++)
                             {
                                 Node node = AllNodes[n];
@@ -1032,6 +1035,7 @@ public class Knot : MonoBehaviour
                             //graph.add_close_point_Joint();
                             //            Draw.beads();// drawモードの変更
                             AdjustEdgeLine();
+                            Debug.Log("OpenTxtFile completes.");
                         }
 
                     }
@@ -1312,7 +1316,7 @@ public class Knot : MonoBehaviour
                     if (Now.MidJoint)
                     {
                         int ndID = this.GetNodeIDFromBeadID(Now.ID);
-                        Debug.LogWarning("Id " + ndID + " will be deleted");
+                        Debug.LogWarning("Node ID " + ndID + " will be deleted");
                         Node nd = GetNodeByID(ndID);
                         if (nd != null)
                         {
@@ -1685,11 +1689,15 @@ public class Knot : MonoBehaviour
             }
         }
         Debug.Log("Complete figure");
+        //ビーズのデータからノード・エッジのデータを再構成
         CreateNodesEdgesFromBeads();
         GetAllThings();
+        //エッジの形を整える
         Modify();
+        //エッジに含まれるビーズを再構成する
         UpdateBeads();
-
+        //ねんのため、もう一度エッジの形を整える。
+        Modify();
     }
 }
 

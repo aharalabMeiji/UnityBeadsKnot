@@ -386,26 +386,33 @@ public class MouseControll : MonoBehaviour {
                 {
                     // 開始ビーズから終了ビーズをたどる方法を探索
                     // 開始ビーズから終了ビーズの間にクロシングがどのように表れるかを調査。
-                    // 0,何もなし、1:オーバーのみ、2:アンダーのみ
-                    int GotoN1 = thisKnot.FindBeadAlongCurve(StartFreeCurveBead, StartFreeCurveBead.N1, EndFreeCurveBead);
-                    int GotoN2 = thisKnot.FindBeadAlongCurve(StartFreeCurveBead, StartFreeCurveBead.N2, EndFreeCurveBead);
-                    //Debug.Log(GotoN1 + "," + GotoN2);
-                    // オーバーのみ、またはアンダーのみの時には処理を開始
-                    if (GotoN1 != -1) 
+                    // first : 0:何もなし、1:オーバーのみ、2:アンダーのみ
+                    // second : ビーズ距離
+                    PairInt GotoN1 = thisKnot.FindBeadAlongCurve(StartFreeCurveBead, StartFreeCurveBead.N1, EndFreeCurveBead);
+                    PairInt GotoN2 = thisKnot.FindBeadAlongCurve(StartFreeCurveBead, StartFreeCurveBead.N2, EndFreeCurveBead);
+                    Debug.Log(GotoN1.first + "," + GotoN2.first);
+                    bool BothOK = (GotoN1.first != -1) && (GotoN2.first != -1); 
+                    // オーバーのみ、またはアンダーのみの時には処理を開始（どちらともとれる場合には、短いほう）
+                    if (GotoN1.first != -1 || (BothOK && GotoN1.second < GotoN2.second)) 
                     {
                         //　開始ビーズから終了ビーズまでの既存のビーズラインを消去
                         thisKnot.DeleteBeadsFromTo(StartFreeCurveBead, StartFreeCurveBead.N1, EndFreeCurveBead);
                         // フリーループにあたる部分をビーズへと変換
-                        thisKnot.FreeCurve2Bead(StartFreeCurveBead, EndFreeCurveBead, GotoN1);
+                        thisKnot.FreeCurve2Bead(StartFreeCurveBead, EndFreeCurveBead, GotoN1.first);
                         // 旧フリーループと旧ビーズとの交点を探してジョイントにする。
                     }
-                    else if(GotoN2 != -1)
+                    else if(GotoN2.first != -1 || (BothOK &&  GotoN1.second > GotoN2.second))
                     {
                         //　開始ビーズから終了ビーズまでの既存のビーズラインを消去
                         thisKnot.DeleteBeadsFromTo(StartFreeCurveBead, StartFreeCurveBead.N2, EndFreeCurveBead);
                         // フリーループにあたる部分をビーズへと変換
-                        thisKnot.FreeCurve2Bead(StartFreeCurveBead, EndFreeCurveBead, GotoN2);
+                        thisKnot.FreeCurve2Bead(StartFreeCurveBead, EndFreeCurveBead, GotoN2.first);
                         // 旧フリーループと旧ビーズとの交点を探してジョイントにする。
+                    }
+                    else //書き換える条件を満たしていないとき
+                    {//すべてを消去して終了
+                        FreeLoop.GetComponent<FreeLoop>().FreeCurve.Clear();
+                        Display.SetDrawKnotMode();
                     }
                     // グラフ構造を書き換える
                     // 形を整える

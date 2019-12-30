@@ -33,7 +33,7 @@ public class Bead : MonoBehaviour {
         }
         else
         {
-            gameObject.transform.localScale = new Vector3(0.015f, 0.015f, 1f);
+            gameObject.transform.localScale = new Vector3(0.018f, 0.018f, 1f);
             SR.color = new Color(0.9f,0.9f,0.9f);
         }
     }

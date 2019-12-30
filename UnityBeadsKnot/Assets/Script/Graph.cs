@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Graph : MonoBehaviour
 {
-    bool show = false;
+    //bool show = false;
     // Start is called before the first frame update
     void Start()
     {
