@@ -1176,6 +1176,29 @@ public class Knot : MonoBehaviour
         //World.Mode = MODE.ADD_POINT;
     }
 
+    public void Rotation(float angle)
+    {
+        if (Mathf.Abs(angle) < 0.1f)
+        {
+            GetAllThings();
+            for (int i = 0; i < AllBeads.Length; i++)
+            {
+                Bead bd = AllBeads[i];
+                float x = bd.Position.x;
+                float y = bd.Position.y;
+                bd.Position.x = Mathf.Cos(angle) * x - Mathf.Sin(angle) * y;
+                bd.Position.y = Mathf.Sin(angle) * x + Mathf.Cos(angle) * y;
+            }
+            for (int i = 0; i < AllNodes.Length; i++)
+            {
+                Node nd = AllNodes[i];
+                float x = nd.Position.x;
+                float y = nd.Position.y;
+                nd.Position.x = Mathf.Cos(angle) * x - Mathf.Sin(angle) * y;
+                nd.Position.y = Mathf.Sin(angle) * x + Mathf.Cos(angle) * y;
+            }
+        }
+    }
 
     public void SaveTxtFile(string filePath)
     {
@@ -1220,6 +1243,24 @@ public class Knot : MonoBehaviour
         {
             Debug.LogError(e.Data);
             Debug.LogError(e.Message);
+        }
+    }
+
+    public void Scale(float a)
+    {
+        if (Mathf.Abs(a) > 0.9f)
+        {
+            GetAllThings();
+            for (int i=0; i<AllBeads.Length; i++)
+            {
+                Bead bd = AllBeads[i];
+                bd.Position = a * bd.Position;
+            }
+            for(int i=0; i<AllNodes.Length; i++)
+            {
+                Node nd = AllNodes[i];
+                nd.Position = a * nd.Position;
+            }
         }
     }
     // findOnBeads系のメソッド

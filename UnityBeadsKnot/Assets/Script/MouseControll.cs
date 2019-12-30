@@ -228,7 +228,16 @@ public class MouseControll : MonoBehaviour {
                 thisKnot.UpdateBeadsAtNode(DraggedNode);
                 //Debug.Log("after UpdateBeadsAtNode " + thisKnot.GetNodeByID(0).ThisBead.Position);
                 //// ドラッグしているノードについて、回転して適正な位置にする。
-                thisKnot.UpdateNodeTheta(DraggedNode);
+                if (Input.GetKey(KeyCode.Q))
+                {
+                    DraggedNode.Theta += 0.01f;
+                }
+                else if (Input.GetKey(KeyCode.W))
+                {
+                    DraggedNode.Theta -= 0.01f;
+                }
+                //thisKnot.UpdateNodeTheta(DraggedNode);
+
                 //// thisKnot.UpdateNodeRotation();
             }
             //通常モードでフリーカーブを描いているとき
@@ -634,6 +643,22 @@ public class MouseControll : MonoBehaviour {
                 Display.SetMenuMode();
             }
         }
+        else if (Input.GetKeyDown(KeyCode.UpArrow))
+        {
+            KeyCodeUpArrow();
+        }
+        else if (Input.GetKeyDown(KeyCode.DownArrow))
+        {
+            KeyCodeDownArrow();
+        }
+        else if (Input.GetKeyDown(KeyCode.LeftArrow))
+        {
+            KeyCodeLeftArrow();
+        }
+        else if (Input.GetKeyDown(KeyCode.RightArrow))
+        {
+            KeyCodeRightArrow();
+        }
         else if (Input.GetKeyDown(KeyCode.N))
         {
             KeyCodeN();
@@ -650,6 +675,23 @@ public class MouseControll : MonoBehaviour {
             thisMenu.HideMenu();
             Display.SetDrawKnotMode();
         }
+    }
+
+    void KeyCodeUpArrow()
+    {
+        thisKnot.Scale(1.1f);
+    }
+    void KeyCodeDownArrow()
+    {
+        thisKnot.Scale(0.909f);
+    }
+    void KeyCodeLeftArrow()
+    {
+        thisKnot.Rotation(0.05f);
+    }
+    void KeyCodeRightArrow()
+    {
+        thisKnot.Rotation(-0.05f);
     }
 
     void KeyCodeN()
@@ -698,4 +740,6 @@ public class MouseControll : MonoBehaviour {
         Debug.Log(filePath);
         thisKnot.SaveTxtFile(filePath);
     }
+
+
 }
