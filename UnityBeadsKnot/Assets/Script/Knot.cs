@@ -205,10 +205,7 @@ public class Knot : MonoBehaviour
         for (int n = 0; n < nodesSize; n++)
         {
             GameObject prefab = Resources.Load<GameObject>("Prefabs/Node");
-            GameObject obj = Instantiate(prefab,
-                Vector3.zero,
-                Quaternion.identity,
-                Nodes.transform);
+            GameObject obj = Instantiate(prefab, Vector3.zero,  Quaternion.identity,  Nodes.transform);
             Node nd = obj.GetComponent<Node>();
             nd.ID = n;
             nd.Position = new Vector3((float)nodes[n,0] * 0.01f - 5f, -(float)nodes[n,1] * 0.01f + 5f);//補正
@@ -219,10 +216,12 @@ public class Knot : MonoBehaviour
             nd.R[2] = (float)nodes[n,5] * 0.01f;
             nd.R[3] = (float)nodes[n,6] * 0.01f;
             nd.Joint = true;
+            nd.Active = true;
             Bead bd = AddBead(nd.Position);
             bd.ID = CountBeads;
             bd.N1 = bd.N2 = bd.U1 = bd.U2 = null;
             nd.ThisBead = bd;
+            nd.Active = true;
             CountBeads++;
         }
         int edgesSize = edges.Length / 4;
@@ -313,15 +312,48 @@ public class Knot : MonoBehaviour
             {
                 for(int r=0; r<4; r++)
                 {
-                    int edgeLength1 = CountBeadsOnEdge(bd, r, false);
-                    int edgeLength2 = CountBeadsOnEdge(bd, r, true);
-                    if (edgeLength1 == edgeLength2)// midJointがないエッジ
-                    {
-                        PairInt end = FindEndOfEdgeOnBead(bd, r);
-                        if (end.first == bd.ID || edgeLength1 >15)// ループ、または長いエッジ
+                    Bead bd3 = bd.GetNU12(r);
+                    if (bd3 != null) {
+                        int edgeLength1 = CountBeadsOnEdge(bd, r, false);
+                        int edgeLength2 = CountBeadsOnEdge(bd, r, true);
+                        if (edgeLength2 < 2)// とにかく短いエッジ
                         {
-                            Bead bd2 = GetBeadOnEdge(bd, r, (int)(edgeLength1 / 2));
-                            bd2.MidJoint = true;// //midJoint追加
+                            Debug.Log("処理が必要: edgeLength = " + edgeLength2 + "bdID = " + bd.ID + ", " + r);
+                            int NewID = GetMaxIDOfBead()+1;
+                            Bead bd1 = AddBead(0.7f * bd.Position + 0.3f * bd3.Position, NewID);
+                            Bead bd2 = AddBead(0.3f * bd.Position + 0.7f * bd3.Position, NewID+1);
+                            bd1.N1 = bd;
+                            bd1.N2 = bd2;
+                            bd1.Joint = bd1.MidJoint = false;
+                            bd2.N1 = bd1;
+                            bd2.N2 = bd3;
+                            bd2.Joint = bd2.MidJoint = false;
+                            if (bd.N1 == bd3) bd.N1 = bd1;
+                            else if (bd.N2 == bd3) bd.N2 = bd1;
+                            else if (bd.U1 == bd3) bd.U1 = bd1;
+                            else if (bd.U2 == bd3) bd.U2 = bd1;
+                            if (bd3.N1 == bd) bd3.N1 = bd2;
+                            else if (bd3.N2 == bd) bd3.N2 = bd2;
+                            else if (bd3.U1 == bd) bd3.U1 = bd2;
+                            else if (bd3.U2 == bd) bd3.U2 = bd2;
+                        }
+                        if (edgeLength2 > 20) // とにかく長いエッジ
+                        {
+                            int divNumber = Mathf.CeilToInt(1f * edgeLength2 / 20f);
+                            for (int b = 1; b < divNumber; b++)
+                            {
+                                Bead bd2 = GetBeadOnEdge(bd, r, (int)(edgeLength2 * b / divNumber));
+                                bd2.MidJoint = true;// //midJoint追加
+                            }
+                        }
+                        else if (edgeLength1 == edgeLength2)// midJointがないエッジ
+                        {
+                            PairInt end = FindEndOfEdgeOnBead(bd, r);
+                            if (end.first == bd.ID)// midJointがないループ
+                            {
+                                Bead bd2 = GetBeadOnEdge(bd, r, (int)(edgeLength1 / 2));
+                                bd2.MidJoint = true;// //midJoint追加
+                            }
                         }
                     }
                 }
@@ -443,20 +475,29 @@ public class Knot : MonoBehaviour
         int result = 0;
         Bead prev =  a.ThisBead;
         Bead now = prev.GetNU12(ar);
-        Bead next = null;
+        if (now == null)
+        {
+            return -1;
+        }
+        if (now.ID == b.ThisBead.ID)
+        {
+            return 0;
+        }
+        Bead next;
         for(int repeat=0; repeat<AllBeads.Length; repeat++)// リピートしすぎない工夫。
         {
-            if (now.GetNU12(0).ID == prev.ID)
+            if (now.N1.ID == prev.ID)
             {
-                next = now.GetNU12(2);
+                next = now.N2;
             }
-            else if (now.GetNU12(2).ID == prev.ID)
+            else if (now.N2.ID == prev.ID)
             {
-                next = now.GetNU12(0);
+                next = now.N1;
             }
             else
             {
-                Debug.Log("error in GetBeadsNumberOnEdge");
+                Debug.LogError("error in GetBeadsNumberOnEdge");
+                return -1;
             }
             result++;
             //Debug.Log("" + next.ID + " " + b.ThisBead.ID);
@@ -470,14 +511,14 @@ public class Knot : MonoBehaviour
                 now = next;
             }
         }
-        return result;
+        return -1;
     }
 
     public int GetNodeIDFromBeadID(int beadId)
     {
         for(int i=0; i<AllNodes.Length; i++)
         {
-            if(AllNodes[i].ThisBead.ID == beadId)
+            if(AllNodes[i].Active && AllNodes[i].ThisBead.Active && AllNodes[i].ThisBead.ID == beadId)
             {
                 return AllNodes[i].ID;
             }
@@ -513,7 +554,7 @@ public class Knot : MonoBehaviour
         int Max = 0;
         for (int i = 0; i < AllBeads.Length; i++)
         {
-            if (AllBeads[i].ID > Max)
+            if (AllBeads[i].Active && AllBeads[i].ID > Max)
             {
                 Max = AllBeads[i].ID;
             }
@@ -529,9 +570,12 @@ public class Knot : MonoBehaviour
     {
         for (int i = 0; i < AllNodes.Length; i++)
         {
-            if (AllNodes[i]!=null && AllNodes[i].ID == id)
+            if (AllNodes[i] != null)
             {
-                return AllNodes[i];
+                if (AllNodes[i].Active && AllNodes[i].ID == id)
+                {
+                    return AllNodes[i];
+                }
             }
         }
         return null;
@@ -586,9 +630,7 @@ public class Knot : MonoBehaviour
     /// </summary>
     public void UpdateBeads()
     {
-        //AllNodes = FindObjectsOfType<Node>();
-        //AllEdges = FindObjectsOfType<Edge>();
-        //AllBeads = FindObjectsOfType<Bead>();
+        GetAllThings();
         for (int e = 0; e < AllEdges.Length; e++)
         {
             Edge ed = AllEdges[e];
@@ -609,7 +651,7 @@ public class Knot : MonoBehaviour
             ANode = ed.ANode = GetNodeByID(ed.ANodeID);
             BNode = ed.BNode = GetNodeByID(ed.BNodeID);
         }
-        //            if (!ANode.Active || !BNode.Active) return;
+        //if (!ANode.Active || !BNode.Active) return;
         Bead ABead = ANode.ThisBead;
         Bead BBead = BNode.ThisBead;
         //Debug.Log("EdgeData:"+ANode.Position+"-"+BNode.Position);
@@ -617,10 +659,14 @@ public class Knot : MonoBehaviour
         float arclength = GetRealArclength(ANode, ed.ANodeRID, BNode, ed.BNodeRID);
         //// 理想とするビーズの内個数を計算する。
         int beadsNumber = Mathf.FloorToInt(arclength / beadsInterval) - 2;
-        //// 必要な内個数が少ない場合を想定して、最小数を決めておく。（多分3くらいがベスト）
-        if (beadsNumber < 3) beadsNumber = 3;
+        //// 必要な内個数が少ない場合を想定して、最小数を決めておく。（多分4くらいがベスト）
+        if (beadsNumber < 4) beadsNumber = 4;
         //// edgeの上にある現在のビーズの内個数を数える。
         int beadsCount = GetBeadsNumberOnEdge(ANode, ed.ANodeRID, BNode, ed.BNodeRID);
+        if (beadsCount < 0) 
+        {
+            return;
+        }
         //Debug.Log("必要数,現状数:"+beadsNumber+","+ beadsCount);
         if (beadsNumber > beadsCount)
         {// 必要数のほうが多い→ビーズの追加が必要
@@ -687,13 +733,13 @@ public class Knot : MonoBehaviour
                 now.Position = now.transform.position = pt1;
                 bd++;
                 Bead next;
-                if (now.GetNU12(0) == prev)
+                if (now.N1 == prev)
                 {
-                    next = now.GetNU12(2);
+                    next = now.N2;
                 }
                 else
                 {
-                    next = now.GetNU12(0);
+                    next = now.N1;
                 }
                 prev = now;
                 now = next;
@@ -709,15 +755,14 @@ public class Knot : MonoBehaviour
     public void UpdateBeadsAtNode(Node nd)
     {
         //Debug.Log("UpdateBeadsAtNode");
-        //AllNodes = FindObjectsOfType<Node>();
-        //AllEdges = FindObjectsOfType<Edge>();
-        //AllBeads = FindObjectsOfType<Bead>();
         for (int e = 0; e < AllEdges.Length; e++)
         {
             Edge ed = AllEdges[e];
+            Debug.Log(ed.ANodeID+","+ed.ANodeRID+":"+ed.BNodeID+","+ed.BNodeRID);
+            Debug.Log(GetNodeByID(0).Position);
             if(ed.ANodeID == nd.ID || ed.BNodeID == nd.ID)
             {
-                //Debug.Log(nd.Position);
+
                 UpdateBeadsOnEdge(ed);
             }
 
@@ -1116,6 +1161,23 @@ public class Knot : MonoBehaviour
         {
             return new PairInt(-1, -1);// 失敗
         }
+        // NowがすでにJointの場合
+        if (Now.Joint || (midJoint && Now.MidJoint))
+        {
+            if (Prev.ID == Now.N1.ID)
+                return new PairInt(Now.ID, 0);
+            else if (Now.U1 != null && Prev.ID == Now.U1.ID)
+                return new PairInt(Now.ID, 1);
+            else if (Prev.ID == Now.N2.ID)
+                return new PairInt(Now.ID, 2);
+            else if (Now.U2 != null && Prev.ID == Now.U2.ID)
+                return new PairInt(Now.ID, 3);
+            else
+            {
+                Debug.Log("error in FindEndOfEdgeOnBead : 1 ");
+                return new PairInt(-1, -1);// 失敗
+            }
+        }
         Bead Next;
         int MaxRepeat = AllBeads.Length;
         //以降は基本的にN1,N2しか見ない。
@@ -1132,7 +1194,7 @@ public class Knot : MonoBehaviour
             else
             {
                 Debug.Log("error in FindEndOfEdgeOnBead : 0 ");
-                break;
+                return new PairInt(-1, -1);// 失敗
             }
             Prev = Now;
             Now = Next;
@@ -1149,7 +1211,7 @@ public class Knot : MonoBehaviour
                 else
                 {
                     Debug.Log("error in FindEndOfEdgeOnBead : 1 ");
-                    break;
+                    return new PairInt(-1, -1);// 失敗
                 }
             }
         }
@@ -1165,7 +1227,11 @@ public class Knot : MonoBehaviour
         Bead Now = b.GetNU12(r);
         if (Now == null)
         {
-            return 0;// 失敗
+            return -1;// 失敗
+        }
+        if (Now.Joint || (midJoint && Now.MidJoint))
+        {
+            return 0;
         }
         int count = 0;
         Bead Next;
@@ -1183,7 +1249,7 @@ public class Knot : MonoBehaviour
             }
             else
             {
-                Debug.Log("error in FindEndOfEdgeOnBead : 0 ");
+                Debug.LogError("error in CountBeadsOnEdge : " + Prev+","+Now);
                 break;
             }
             Prev = Now;
@@ -1194,7 +1260,7 @@ public class Knot : MonoBehaviour
                 return count;
             }
         }
-        return 0;// 失敗
+        return -1;// 失敗
     }
 
     /// <summary>
@@ -1403,8 +1469,6 @@ public class Knot : MonoBehaviour
     /// <param name="overUnder">1: 新しい経路がオーバー 2:新しい経路がアンダー</param>
     public void FreeCurve2Bead(Bead startBead, Bead endBead, int overUnder)
     {
-        // まず、traceをすべてbeadに置き換える。（両端は除く）
-        //Debug.Log("FreeLoopをbeadsに変換");
         //int startID = startBead.ID;
         int freeLoopStartBeadID = GetMaxIDOfBead();// 最初の番号は freeLoopStartBeadID+1 
         if (startBead == null || endBead == null)
@@ -1484,7 +1548,6 @@ public class Knot : MonoBehaviour
         // freeloopを開放
         freeloop.FreeCurve.Clear();
         //そののちに、既存のビーズ列、自分自身との交差を判定し、jointを追加する。
-        //ArrayList<PVector> meets = new ArrayList<PVector>();
         //重複も許して交点を検出
         List<PairInt> meets = new List<PairInt>();
         int MaxBeadMax = GetMaxIDOfBead();
@@ -1690,14 +1753,16 @@ public class Knot : MonoBehaviour
         }
         Debug.Log("Complete figure");
         //ビーズのデータからノード・エッジのデータを再構成
-        CreateNodesEdgesFromBeads();
         GetAllThings();
+        CreateNodesEdgesFromBeads();
         //エッジの形を整える
-        Modify();
+        //GetAllThings();
+        //Modify();
         //エッジに含まれるビーズを再構成する
-        UpdateBeads();
+        //GetAllThings();
+        //UpdateBeads();
         //ねんのため、もう一度エッジの形を整える。
-        Modify();
+        //Modify();
     }
 }
 

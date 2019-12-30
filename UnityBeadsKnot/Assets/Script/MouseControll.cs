@@ -145,10 +145,11 @@ public class MouseControll : MonoBehaviour {
             DraggedNode = null;
             for(int n=0; n<thisKnot.AllNodes.Length; n++)
             {
-                float dist = (MouseDownVec - thisKnot.AllNodes[n].Position).magnitude;
+                Node thisNode = thisKnot.AllNodes[n];
+                float dist = (MouseDownVec - thisNode.Position).magnitude;
                 if(dist < 0.25f){
-                    DraggedNode = thisKnot.AllNodes[n];
-                    DraggedNodeStartPosition = thisKnot.AllNodes[n].Position;
+                    DraggedNode = thisNode;
+                    DraggedNodeStartPosition = thisNode.Position;
                     return;
                 }
             }
@@ -220,13 +221,13 @@ public class MouseControll : MonoBehaviour {
                 DraggedNode.ThisBead.Position = MouseDragVec;
                 // Nodeの座標も同期する
                 DraggedNode.Position = MouseDragVec;
-                //Debug.Log("mousePosition"+tmpPos);
+                //Debug.Log("mousePosition"+ MouseDragVec);
                 // エッジを作り直す。// Knot.UpdateBeadsを呼び出す。
                 if (thisKnot == null) thisKnot = ThisKnot.GetComponent<Knot>();
-                thisKnot.UpdateBeadsAtNode(DraggedNode);
-                // ドラッグしているノードについて、回転して適正な位置にする。
-                // thisKnot.UpdateNodeRotation();
                 thisKnot.Modify();
+                thisKnot.UpdateBeadsAtNode(DraggedNode);
+                //// ドラッグしているノードについて、回転して適正な位置にする。
+                //// thisKnot.UpdateNodeRotation();
             }
             //通常モードでフリーカーブを描いているとき
             else if (StartFreeCurveBead != null)
@@ -390,7 +391,7 @@ public class MouseControll : MonoBehaviour {
                     // second : ビーズ距離
                     PairInt GotoN1 = thisKnot.FindBeadAlongCurve(StartFreeCurveBead, StartFreeCurveBead.N1, EndFreeCurveBead);
                     PairInt GotoN2 = thisKnot.FindBeadAlongCurve(StartFreeCurveBead, StartFreeCurveBead.N2, EndFreeCurveBead);
-                    Debug.Log(GotoN1.first + "," + GotoN2.first);
+                    //Debug.Log(GotoN1.first + "," + GotoN2.first);
                     bool BothOK = (GotoN1.first != -1) && (GotoN2.first != -1); 
                     // オーバーのみ、またはアンダーのみの時には処理を開始（どちらともとれる場合には、短いほう）
                     if (GotoN1.first != -1 || (BothOK && GotoN1.second < GotoN2.second)) 
