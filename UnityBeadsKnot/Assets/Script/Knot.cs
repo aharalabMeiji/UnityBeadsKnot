@@ -318,8 +318,9 @@ public class Knot : MonoBehaviour
                         int edgeLength2 = CountBeadsOnEdge(bd, r, true);
                         if (edgeLength2 < 2)// とにかく短いエッジ
                         {
-                            Debug.Log("処理が必要: edgeLength = " + edgeLength2 + "bdID = " + bd.ID + ", " + r);
+                            //Debug.Log("処理が必要: edgeLength = " + edgeLength2 + "bdID = " + bd.ID + ", " + r);
                             int NewID = GetMaxIDOfBead()+1;
+                            // 点を二つ追加
                             Bead bd1 = AddBead(0.7f * bd.Position + 0.3f * bd3.Position, NewID);
                             Bead bd2 = AddBead(0.3f * bd.Position + 0.7f * bd3.Position, NewID+1);
                             bd1.N1 = bd;
@@ -337,9 +338,9 @@ public class Knot : MonoBehaviour
                             else if (bd3.U1 == bd) bd3.U1 = bd2;
                             else if (bd3.U2 == bd) bd3.U2 = bd2;
                         }
-                        if (edgeLength2 > 20) // とにかく長いエッジ
+                        if (edgeLength2 > 40) // とにかく長いエッジ
                         {
-                            int divNumber = Mathf.CeilToInt(1f * edgeLength2 / 20f);
+                            int divNumber = Mathf.CeilToInt(1f * edgeLength2 / 40f);
                             for (int b = 1; b < divNumber; b++)
                             {
                                 Bead bd2 = GetBeadOnEdge(bd, r, (int)(edgeLength2 * b / divNumber));
@@ -670,7 +671,7 @@ public class Knot : MonoBehaviour
         //Debug.Log("必要数,現状数:"+beadsNumber+","+ beadsCount);
         if (beadsNumber > beadsCount)
         {// 必要数のほうが多い→ビーズの追加が必要
-            int NewBeadID = AllBeads.Length;
+            int NewBeadID = GetMaxIDOfBead()+1;
             Bead bead1 = ABead;
             int bead1RID = ed.ANodeRID;
             Bead bead2 = ABead.GetNU12(ed.ANodeRID);// ANodeRIDに応じたビーズの番号;
@@ -687,6 +688,7 @@ public class Knot : MonoBehaviour
                 bead1.SetNU12(bead1RID, newBead);
                 bead2.SetNU12(bead2RID, newBead);
                 bead2 = newBead;
+                bead2RID = bead2.GetRID(bead1);// ここに虫がいた。（駆除済み）
             }
         }
         else if (beadsNumber < beadsCount)
@@ -707,16 +709,18 @@ public class Knot : MonoBehaviour
                 //        de.removeBeadFromPoint(bead2);
             }
         }
+        //Debug.Log("(" + ed.ANodeID + "->" + ed.BNodeID + ") " + GetNodeByID(0).ThisBead.Position);
         ////今一度、エッジに乗っているビーズの座標を計算しなおす。
         //Node ANode = nodes.get(ed.ANodeID);
         //Node BNode = nodes.get(ed.BNodeID);
-        AllBeads = FindObjectsOfType<Bead>();
+        //AllBeads = FindObjectsOfType<Bead>();
         Vector3 v1 = ANode.Position;
         Vector3 v2 = ANode.GetCoordEdgeEnd(ed.ANodeRID);
         Vector3 v3 = BNode.GetCoordEdgeEnd(ed.BNodeRID);
         Vector3 v4 = BNode.Position;
         Bead prev = ABead;
         Bead now = ABead.GetNU12(ed.ANodeRID);
+        string log = "";
         float step = arclength * 0.98f / (beadsNumber + 1);
         int bd = 0;
         float arclen = 0f;
@@ -730,6 +734,11 @@ public class Knot : MonoBehaviour
             {
                 //print("update_points():" + arclen + "," + step);
                 //now.SetPosition( pt1);//作ったばかりのときは、transform.positionが優先。
+                log += (""+now.ID+" ");
+                if (GetNodeByID(0).ThisBead.ID == now.ID)
+                {
+                    Debug.Log(log+"!!!!!"+now.Position+"->"+pt1);
+                }
                 now.Position = now.transform.position = pt1;
                 bd++;
                 Bead next;
@@ -750,25 +759,26 @@ public class Knot : MonoBehaviour
             }
             pt0 = pt1;
         }
+        //Debug.Log("(" + ed.ANodeID + "->" + ed.BNodeID + ") " + GetNodeByID(0).ThisBead.Position);
     }
 
     public void UpdateBeadsAtNode(Node nd)
     {
-        //Debug.Log("UpdateBeadsAtNode");
+        //Debug.Log("UpdateBeadsAtNode start " + GetNodeByID(0).ThisBead.Position);
         for (int e = 0; e < AllEdges.Length; e++)
         {
             Edge ed = AllEdges[e];
-            Debug.Log(ed.ANodeID+","+ed.ANodeRID+":"+ed.BNodeID+","+ed.BNodeRID);
-            Debug.Log(GetNodeByID(0).Position);
-            if(ed.ANodeID == nd.ID || ed.BNodeID == nd.ID)
+            //Debug.Log(ed.ANodeID+","+ed.ANodeRID+":"+ed.BNodeID+","+ed.BNodeRID);
+            if (ed.ANodeID == nd.ID || ed.BNodeID == nd.ID)
             {
-
+                //Debug.Log("UpdateBeadsAtNode edge " + ed.ANodeID + "," + ed.ANodeRID + ":" + ed.BNodeID + "," + ed.BNodeRID + " : " + GetNodeByID(0).ThisBead.Position);
                 UpdateBeadsOnEdge(ed);
+                //Debug.Log("UpdateBeadsAtNode edge " + ed.ANodeID + "," + ed.ANodeRID + ":" + ed.BNodeID + "," + ed.BNodeRID + " : " + GetNodeByID(0).ThisBead.Position);
             }
-
         }
         AllBeads = FindObjectsOfType<Bead>();
         AdjustEdgeLine();
+        //Debug.Log("UpdateBeadsAtNode end " + GetNodeByID(0).ThisBead.Position);
     }
 
     /// <summary>
@@ -1756,11 +1766,11 @@ public class Knot : MonoBehaviour
         GetAllThings();
         CreateNodesEdgesFromBeads();
         //エッジの形を整える
-        //GetAllThings();
-        //Modify();
+        GetAllThings();
+        Modify();
         //エッジに含まれるビーズを再構成する
-        //GetAllThings();
-        //UpdateBeads();
+        GetAllThings();
+        UpdateBeads();
         //ねんのため、もう一度エッジの形を整える。
         //Modify();
     }

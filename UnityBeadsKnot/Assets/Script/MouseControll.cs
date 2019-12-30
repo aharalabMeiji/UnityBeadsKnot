@@ -225,7 +225,9 @@ public class MouseControll : MonoBehaviour {
                 // エッジを作り直す。// Knot.UpdateBeadsを呼び出す。
                 if (thisKnot == null) thisKnot = ThisKnot.GetComponent<Knot>();
                 thisKnot.Modify();
+                //Debug.Log("before UpdateBeadsAtNode " + thisKnot.GetNodeByID(0).ThisBead.Position);
                 thisKnot.UpdateBeadsAtNode(DraggedNode);
+                //Debug.Log("after UpdateBeadsAtNode " + thisKnot.GetNodeByID(0).ThisBead.Position);
                 //// ドラッグしているノードについて、回転して適正な位置にする。
                 //// thisKnot.UpdateNodeRotation();
             }

@@ -45,6 +45,10 @@ public class Node : MonoBehaviour {
 
     void Update()
     {
+        //if (ID == 0)
+        //{
+        //    Debug.Log(Position +"=>"+ ThisBead.Position+"("+ ThisBead.ID+")");
+        //}
         Position = ThisBead.Position;
         gameObject.transform.position = Position;
     }
