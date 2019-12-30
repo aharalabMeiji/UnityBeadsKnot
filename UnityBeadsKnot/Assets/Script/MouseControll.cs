@@ -618,20 +618,6 @@ public class MouseControll : MonoBehaviour {
     }
 
 
-    //void ModifyR_Nodes()
-    //{
-
-    //}
-
-    //void ModifyTh_Nodes()
-    //{
-
-    //}
-
-    //void ModifyXY_Nodes()
-    //{
-
-    //}
 
     void OnKeyDown()
     {

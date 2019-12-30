@@ -605,8 +605,8 @@ public class Knot : MonoBehaviour
         Node ANode = GetNodeByID(ed.ANodeID);
         Node BNode = GetNodeByID(ed.BNodeID);
         Vector3 v1 = ANode.Position;
-        Vector3 v2 = ANode.GetCoordEdgeEnd(ed.ANodeID);
-        Vector3 v3 = BNode.GetCoordEdgeEnd(ed.BNodeID);
+        Vector3 v2 = ANode.GetCoordEdgeEnd(ed.ANodeRID);
+        Vector3 v3 = BNode.GetCoordEdgeEnd(ed.BNodeRID);
         Vector3 v4 = BNode.Position;
         float result = 0f;
         Vector3 now = v1;
@@ -798,6 +798,7 @@ public class Knot : MonoBehaviour
 
     public void UpdateNodeTheta(Node nd)
     {
+        float delta = 0.03f;
         float localArcLength = 0;
         Edge[] edges= new Edge[4];
         GetAllThings();
@@ -810,7 +811,7 @@ public class Knot : MonoBehaviour
                 localArcLength += GetRealArclength(ed);
             }
         }
-        nd.Theta += 0.05f;
+        nd.Theta += delta;
         float localArclengthPlus = 0f;
         for(int r=0; r<4; r++)
         {
@@ -819,7 +820,28 @@ public class Knot : MonoBehaviour
                 localArclengthPlus += GetRealArclength(edges[r]);
             }
         }
-        if (localArcLength > localArclengthPlus) return;
+        if (localArcLength > localArclengthPlus)
+        {
+            //Debug.Log("turn left");
+            return;
+        }
+        else nd.Theta -= delta;
+        nd.Theta -= delta;
+        float localArclengthMinus = 0f;
+        for (int r = 0; r < 4; r++)
+        {
+            if (edges[r] != null)
+            {
+                localArclengthPlus += GetRealArclength(edges[r]);
+            }
+        }
+        if (localArcLength > localArclengthMinus)
+        {
+            //Debug.Log("turn right");
+            return;
+        }
+        else nd.Theta += delta;
+
     }
 
     /// <summary>
