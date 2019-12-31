@@ -2,3 +2,6 @@
 
 # IDE0052: 読み取られていないプライベート メンバーを削除
 dotnet_diagnostic.IDE0052.severity = none
+
+# CS0114: メンバーは継承されたメンバーを非表示にします。override キーワードがありません
+dotnet_diagnostic.CS0114.severity = warning

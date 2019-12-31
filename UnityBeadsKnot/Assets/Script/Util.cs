@@ -47,17 +47,76 @@ public class NodeEdgeLog
         Nodes = new List<NodeData>();
         Edges = new List<EdgeData>();
     }
+    public NodeEdgeLog(Knot knot)
+    {
+        Nodes = new List<NodeData>();
+        Edges = new List<EdgeData>();
+        MakeLog(knot);
+    }
 
     public void MakeLog(Knot knot)
     {
-
+        knot.GetAllThings();
+        for (int i = 0; i < knot.AllNodes.Length; i++)
+        {
+            Node nd = knot.AllNodes[i];
+            Nodes.Add(new NodeData(
+                (100f * nd.Position.x + 500f) ,
+                (-100f * nd.Position.y + 500f) ,
+                nd.Theta ,
+                (100f * nd.R[0]) ,
+                (100f * nd.R[1]) ,
+                (100f * nd.R[2]) ,
+                (100f * nd.R[3])
+            ));
+        }
+        for (int i = 0; i < knot.AllEdges.Length; i++)
+        {
+            Edge ed = knot.AllEdges[i];
+            Edges.Add(new EdgeData(
+                ed.ANodeID ,
+                ed.ANodeRID ,
+                ed.BNodeID ,
+                ed.BNodeRID
+                )
+            );
+        }
     }
 
     public void MakeKnot(Knot knot)
     {
+        return ;
+    }
 
+    public override string ToString()
+    {
+        string ret = "";
+        ret += "Node," + Nodes.Count + "\n";
+        for (int i = 0; i < Nodes.Count; i++)
+        {
+            NodeData nddt = Nodes[i];
+            ret += (nddt.PositionX) + ","
+                + (nddt.PositionY) + ","
+                + nddt.Theta + ","
+                + (nddt.R0) + ","
+                + (nddt.R1) + ","
+                + (nddt.R2) + ","
+                + (nddt.R3) + "\n";
+        }
+        ret += "Edge," + Edges.Count + "\n";
+        for (int i = 0; i < Edges.Count; i++)
+        {
+            EdgeData eddt = Edges[i];
+            ret += ""
+                + eddt.AID + ","
+                + eddt.ARID + ","
+                + eddt.BID + ","
+                + eddt.BRID + "\n" ;
+        }
+        return ret;
     }
 }
+
 public class Util : MonoBehaviour
 {
     
