@@ -1200,12 +1200,61 @@ public class Knot : MonoBehaviour
         }
     }
 
+
+    public void SaveLogFile()
+    {
+        try
+        {
+            GetAllThings();
+            DateTime dt = DateTime.Now;
+            string FileName = dt.Month + "-" + dt.Day + "-" + dt.Hour + "-" + dt.Minute + ".txt";
+            using (StreamWriter streamWriter = new StreamWriter(FileName, append: true))
+            {
+                streamWriter.WriteLine("BeadsKnot,0");
+                int NumberOfNodes = AllNodes.Length;
+                streamWriter.WriteLine("Nodes," + NumberOfNodes);
+                for (int i = 0; i < NumberOfNodes; i++)
+                {
+                    Node nd = AllNodes[i];
+                    streamWriter.WriteLine(""
+                      + (100f * nd.Position.x + 500f) + ","
+                        + (-100f * nd.Position.y + 500f) + ","
+                        + nd.Theta + ","
+                        + (100f * nd.R[0]) + ","
+                        + (100f * nd.R[1]) + ","
+                        + (100f * nd.R[2]) + ","
+                        + (100f * nd.R[3])
+                        );
+                }
+                int NumberOfEdges = AllEdges.Length;
+                streamWriter.WriteLine("Edges," + NumberOfEdges);
+                for (int i = 0; i < NumberOfEdges; i++)
+                {
+                    Edge ed = AllEdges[i];
+                    streamWriter.WriteLine(""
+                        + ed.ANodeID + ","
+                        + ed.ANodeRID + ","
+                        + ed.BNodeID + ","
+                        + ed.BNodeRID
+                        );
+                }
+                streamWriter.WriteLine("Region,0");
+                streamWriter.WriteLine("BeadsKnotEnd");
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.LogError(e.Data);
+            Debug.LogError(e.Message);
+        }
+    }
+
     public void SaveTxtFile(string filePath)
     {
         try
         {
             GetAllThings();
-            using (StreamWriter streamWriter = new StreamWriter(filePath, append: true))
+            using (StreamWriter streamWriter = new StreamWriter(filePath, append: false))
             {
                 streamWriter.WriteLine("BeadsKnot,0");
                 int NumberOfNodes = AllNodes.Length;
@@ -1363,8 +1412,9 @@ public class Knot : MonoBehaviour
             }
             else
             {
-                Debug.LogError("error in CountBeadsOnEdge : " + Prev+","+Now);
-                break;
+                Debug.LogError("error in CountBeadsOnEdge : " + Prev.ID+","+Now.ID);
+                SaveLogFile();
+                return -1;
             }
             Prev = Now;
             Now = Next;

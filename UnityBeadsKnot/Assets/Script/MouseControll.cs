@@ -181,6 +181,7 @@ public class MouseControll : MonoBehaviour {
         }
         else if (Display.IsFreeLoopMode())
         {
+            Debug.Log("Free loop starts");
             FreeLoop.GetComponent<FreeLoop>().AddPoint2FreeCurve(MouseDownVec);
             PreviousPosition = MouseDownVec;
         }
@@ -702,6 +703,8 @@ public class MouseControll : MonoBehaviour {
         // マウスドラッグで一本線を入力するモードに入る
         Display.SetFreeLoopMode();
         Debug.Log("FreeLoopMode()");
+        ThisMenu.GetComponent<Menu>().HideMenu();
+
         // Mode.
         //　閉じるような曲線の入力を受け付ける
         //　点列から交点を抽出

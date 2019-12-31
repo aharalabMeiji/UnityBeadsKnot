@@ -25,14 +25,24 @@ public class Menu : MonoBehaviour
                 Destroy(objs[i]);
             }
         }
+        float Top = 4.8f;
+        float VerticalStep = 0.8f;
         GameObject prefab = Resources.Load<GameObject>("Prefabs/MenuItem");
-        GameObject obj = Instantiate<GameObject>(prefab, new Vector3(-4.5f, 4f, -1f), Quaternion.identity, transform);
+        GameObject obj = Instantiate<GameObject>(prefab, new Vector3(-6.5f, Top, -0.1f), Quaternion.identity, transform);
         TextMesh tm = obj.GetComponent<TextMesh>();
         tm.text = "[o] Open file";
-        obj = Instantiate<GameObject>(prefab, new Vector3(-4.5f, 3f, -1f), Quaternion.identity, transform);
+        obj = Instantiate<GameObject>(prefab, new Vector3(-6.5f, Top-VerticalStep, -0.1f), Quaternion.identity, transform);
         tm = obj.GetComponent<TextMesh>();
-        tm.text = "[n] free loop";
-        MenuBoard.transform.localPosition = Vector3.forward * 0.5f;
+        tm.text = "[n] Free loop";
+        obj = Instantiate<GameObject>(prefab, new Vector3(-6.5f, Top - 2*VerticalStep, -0.1f), Quaternion.identity, transform);
+        tm = obj.GetComponent<TextMesh>();
+        tm.text = "[up][down] Scaling";
+        obj = Instantiate<GameObject>(prefab, new Vector3(-6.5f, Top - 3*VerticalStep, -0.1f), Quaternion.identity, transform);
+        tm = obj.GetComponent<TextMesh>();
+        tm.text = "[right][left] Rotation";
+        obj = Instantiate<GameObject>(prefab, new Vector3(-6.5f, Top - 4 * VerticalStep, -0.1f), Quaternion.identity, transform);
+        tm = obj.GetComponent<TextMesh>();
+        tm.text = "[esc] Hide Mene";
     }
 
     public void HideMenu()
@@ -46,10 +56,13 @@ public class Menu : MonoBehaviour
             }
         }
         GameObject prefab = Resources.Load<GameObject>("Prefabs/MenuItem");
-        GameObject obj = Instantiate<GameObject>(prefab, new Vector3(-4.5f,4f,-1f), Quaternion.identity, transform);
+        GameObject obj = Instantiate<GameObject>(prefab, new Vector3(-6.5f,4.8f,-0.1f), Quaternion.identity, transform);
         TextMesh tm = obj.GetComponent<TextMesh>();
         //tm.text = new string("[Esc] Menu");
-        tm.text = "[Esc] Menu";
-        MenuBoard.transform.localPosition = Vector3.forward * 1.5f;
+        tm.text = "[esc] Show Menu   ";
+        if (Display.IsFreeLoopMode())
+        {
+            tm.text += "Draw a free loop";
+        }
     }
 }
