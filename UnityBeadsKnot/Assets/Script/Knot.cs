@@ -1286,6 +1286,9 @@ public class Knot : MonoBehaviour
                 }
                 streamWriter.WriteLine("Region,0");
                 streamWriter.WriteLine("BeadsKnotEnd");
+                //以下二つは必要？
+                streamWriter.Flush();
+                streamWriter.Close();
             }
         }
         catch (Exception e)

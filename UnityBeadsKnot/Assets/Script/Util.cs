@@ -5,6 +5,59 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.IO;
 
+public class NodeData
+{
+    public float PositionX;
+    public float PositionY;
+    public float Theta;
+    public float R0;
+    public float R1;
+    public float R2;
+    public float R3;
+    public NodeData(float _PositionX, float _PositionY, float _Theta, float _R0, float _R1, float _R2, float _R3)
+    {
+        PositionX = _PositionX;
+        PositionY = _PositionY;
+        Theta = _Theta;
+        R0 = _R0;
+        R1 = _R1;
+        R2 = _R2;
+        R3 = _R3;
+    }
+}
+
+public class EdgeData
+{
+    public int AID, ARID, BID, BRID;
+    public EdgeData(int _AID, int _ARID, int _BID, int _BRID)
+    {
+        AID = _AID;
+        ARID = _ARID;
+        BID = _BID;
+        BRID = _BRID;
+    }
+}
+
+public class NodeEdgeLog
+{
+    List<NodeData> Nodes;
+    List<EdgeData> Edges;
+    public NodeEdgeLog()
+    {
+        Nodes = new List<NodeData>();
+        Edges = new List<EdgeData>();
+    }
+
+    public void MakeLog(Knot knot)
+    {
+
+    }
+
+    public void MakeKnot(Knot knot)
+    {
+
+    }
+}
 public class Util : MonoBehaviour
 {
     
