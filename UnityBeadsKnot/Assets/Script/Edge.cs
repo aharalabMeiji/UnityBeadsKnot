@@ -13,6 +13,7 @@ public class Edge : MonoBehaviour
     public int ANodeRID;
     public int BNodeRID;
     public int ID;
+    public bool Oriented = false;
 
     //private int BeadsNumber;
     //private List<Bead> Beads; 

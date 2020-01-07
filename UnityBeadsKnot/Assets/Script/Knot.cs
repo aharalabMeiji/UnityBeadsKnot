@@ -10,6 +10,7 @@ public class Knot : MonoBehaviour
     public Bead[] AllBeads;
     public Node[] AllNodes;
     public Edge[] AllEdges;
+    public bool Oriented=false;
 
     // Start is called before the first frame update
     void Start()
@@ -297,6 +298,9 @@ public class Knot : MonoBehaviour
         //  CloseJointの設定を行う（マストではない）            
         //graph.add_close_point_Joint();
         //            Draw.beads();// drawモードの変更
+        
+        MakeOrientation();// 向きを入れておく。
+
         AdjustEdgeLine();
     }
     /// <summary>
@@ -425,13 +429,14 @@ public class Knot : MonoBehaviour
         }
         GetAllThings();
         //グラフの形を整える。現状ではR[]を整えるだけ。
-        //Modify();
+        Modify();
         //
-        //UpdateBeads();
+        UpdateBeads();
         //  CloseJointの設定を行う（マストではない）            
         //graph.add_close_point_Joint();
         //            Draw.beads();// drawモードの変更
-        //AdjustEdgeLine();
+        MakeOrientation();// 向きを入れておく。
+        AdjustEdgeLine();
     }
 
     /// <summary>
@@ -549,7 +554,7 @@ public class Knot : MonoBehaviour
     /// ビーズIDの最大値を求める
     /// </summary>
     /// <returns></returns>
-    int GetMaxIDOfBead()
+    public int GetMaxIDOfBead()
     {
         GetAllThings();
         int Max = 0;
@@ -619,7 +624,69 @@ public class Knot : MonoBehaviour
         }
         return result;
     }
-
+    /// <summary>
+    /// 結び目の向きを適当に決める。
+    /// </summary>
+    void MakeOrientation()
+    {
+        GetAllThings();
+        for(int e=0; e<AllEdges.Length; e++)
+        {
+            Edge ed = AllEdges[e];
+            ed.Oriented = false;// いったんクリアする
+        }
+        Edge PrevEdge = null;
+        for (int e = 0; e < AllEdges.Length; e++)
+        {
+            Edge ed = AllEdges[e];
+            if (PrevEdge == null && ed.Oriented == false)
+            {
+                PrevEdge = ed;
+                ed.Oriented = true;
+                for (int repeat = 0; repeat < AllEdges.Length; repeat++)
+                {
+                    for (int f = 0; f < AllEdges.Length; f++)
+                    {
+                        Edge ed2 = AllEdges[f];
+                        if (ed2.ANodeID == PrevEdge.BNodeID && ed2.ANodeRID != PrevEdge.BNodeRID && (ed2.ANodeRID - PrevEdge.BNodeRID) % 2 == 0)
+                        {
+                            if (ed2.Oriented)
+                            {
+                                PrevEdge = null;
+                                repeat = AllEdges.Length;
+                            }
+                            else
+                            {
+                                PrevEdge = ed2;
+                                ed2.Oriented = true;
+                            }
+                            break;
+                        }
+                        else if (ed2.BNodeID == PrevEdge.BNodeID && ed2.BNodeRID != PrevEdge.BNodeRID && (ed2.BNodeRID - PrevEdge.BNodeRID) % 2 == 0)
+                        {
+                            if (ed2.Oriented)
+                            {
+                                PrevEdge = null; 
+                                repeat = AllEdges.Length;// 論理的に俺はあり得ないと思う。
+                            }
+                            else
+                            {
+                                int tmpID = ed2.ANodeID;
+                                ed2.ANodeID = ed2.BNodeID;
+                                ed2.BNodeID = tmpID;
+                                int tmpRID = ed2.ANodeRID;
+                                ed2.ANodeRID = ed2.BNodeRID;
+                                ed2.BNodeRID = tmpRID;
+                                PrevEdge = ed2;
+                                ed.Oriented = true;
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
     /// <summary>
     /// グラフの形を整える。ただし、これが良いとは限らない。
     /// ビーズに戻して物理モデルで整形するという考えもある。
@@ -639,9 +706,10 @@ public class Knot : MonoBehaviour
         // ジョイントをドラッグするときに限り、
         //該当するジョイントの周りのthetaを最適化するようにする。
         //未実装（20190128メモ）
-        
+
         //Nodeの(x,y)を最適化する
         //未実装
+        //MakeOrientation();// 向きを入れておく。
     }
 
     /// <summary>
@@ -1152,6 +1220,7 @@ public class Knot : MonoBehaviour
                             //  CloseJointの設定を行う（マストではない）            
                             //graph.add_close_point_Joint();
                             //            Draw.beads();// drawモードの変更
+                            MakeOrientation();// 向きを入れておく。
                             AdjustEdgeLine();
                             Debug.Log("OpenTxtFile completes.");
                         }
@@ -1930,6 +1999,7 @@ public class Knot : MonoBehaviour
         UpdateBeads();
         //ねんのため、もう一度エッジの形を整える。
         //Modify();
+        MakeOrientation();// 向きを入れておく。
     }
 }
 

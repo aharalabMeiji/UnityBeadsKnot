@@ -660,6 +660,10 @@ public class MouseControll : MonoBehaviour {
         {
             KeyCodeRightArrow();
         }
+        else if (Input.GetKeyDown(KeyCode.D))
+        {
+            KeyCodeD();
+        }
         else if (Input.GetKeyDown(KeyCode.N))
         {
             KeyCodeN();
@@ -693,6 +697,12 @@ public class MouseControll : MonoBehaviour {
     void KeyCodeRightArrow()
     {
         thisKnot.Rotation(-0.05f);
+    }
+
+
+    void KeyCodeD()
+    {
+        Dowker dwk = new Dowker();
     }
 
     void KeyCodeN()

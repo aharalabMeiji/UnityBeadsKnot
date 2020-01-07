@@ -450,6 +450,7 @@ MonoBehaviour:
   AllBeads: []
   AllNodes: []
   AllEdges: []
+  Oriented: 0
 --- !u!1 &789819612
 GameObject:
   m_ObjectHideFlags: 0
