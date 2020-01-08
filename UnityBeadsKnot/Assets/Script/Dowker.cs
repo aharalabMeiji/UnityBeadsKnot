@@ -10,8 +10,8 @@ public class Dowker //: MonoBehaviour
     //int dowker[]={4, 10, -12, 14, 22, 2, 18, 20, 8, 6, 16};
     //int dowker[]={6, 8, 16, 14, 4, 18, 20, 2, 22, 12, 10};
     //int dowker[] = {6, 10, 16, 18, 14, 2, 20, 4, 22, 12, 8};
-    //int[] dowker = {6, 12, 16, 18, 14, 4, 20, 22, 2, 8, 10};
-    int[] dowker = {40, 24, 10, 30, 22, 52, 32, 64, 46, 12, 6 ,42, 60, 2, 8, 50, 66, 16, 62, 58, 28, 4, 54, 34, 14, 20, 68, 36, 72, 26, 70, 56, 48, 18, 44, 38};
+    int[] dowker = {6, 12, 16, 18, 14, 4, 20, 22, 2, 8, 10};
+    //int[] dowker = {40, 24, 10, 30, 22, 52, 32, 64, 46, 12, 6 ,42, 60, 2, 8, 50, 66, 16, 62, 58, 28, 4, 54, 34, 14, 20, 68, 36, 72, 26, 70, 56, 48, 18, 44, 38};
 
 
     Knot thisKnot;
@@ -388,10 +388,10 @@ public class Dowker //: MonoBehaviour
         for (int n = 0; n < nodeNumber; n++)
         {
             DNode nn = nodes[n];
-            Node nd = thisKnot.AddNode(new Vector3((nn.x-400f)*0.01f, (nn.y-400f)*0.01f), n);// ID = n
-            Bead bd = thisKnot.AddBead(new Vector3((nn.x - 400f) * 0.01f, (nn.y - 400f) * 0.01f), n);// ID = n
             if (n % 5 == 0)
             {// ジョイント
+                Node nd = thisKnot.AddNode(new Vector3((nn.x - 400f) * 0.01f, (nn.y - 400f) * 0.01f), n);// ID = n
+                Bead bd = thisKnot.AddBead(new Vector3((nn.x - 400f) * 0.01f, (nn.y - 400f) * 0.01f), n);// ID = n
                 if (nn.ou)
                 {
                     nd.Theta = Mathf.Atan2(nodes[n + 1].y - nodes[n].y, nodes[n + 1].x - nodes[n].x);
@@ -410,132 +410,129 @@ public class Dowker //: MonoBehaviour
                 bd.ID = n;
                 bd.Joint = true;
                 bd.MidJoint = false;
+                nd.ThisBead = bd;
             }
             else
             {//非ジョイント
-                int n0 = (int)(n / 5) * 5;
-                nd.Theta = Mathf.Atan2(nodes[n0].y - nodes[n].y, nodes[n0].x - nodes[n].x);
-                nd.R[0] = nd.R[1] = nd.R[2] = nd.R[3] = 0.1f;
-                nd.ID = n;
-                nd.Joint = nd.MidJoint = false;
+                Bead bd = thisKnot.AddBead(new Vector3((nn.x - 400f) * 0.01f, (nn.y - 400f) * 0.01f), n);// ID = n
                 bd.NumOfNbhd = 2;//あとで設定
                 bd.N1 = bd.N2 = null;//あとで設定
                 bd.U1 = bd.U2 = null;//あとで設定
                 bd.ID = n;
                 bd.Joint = false;
-                bd.MidJoint = true;
+                bd.MidJoint = false;
             }
-            nd.ThisBead = bd;
         }
         int BeadLastID = thisKnot.GetMaxIDOfBead();
         // edges
-        int edgeNumber = 0;
-        for (int e = 0; e < edges.Count; e++)
-        {
-            DEdge ee = edges[e];
-            if (ee.visible)
-            {
-                edgeNumber++;
-            }
-        }
         int A = -1, AR = -1, B = -1, BR = -1;
         for (int e = 0; e < edges.Count; e++)
         {
             DEdge ee = edges[e];
             if (ee.visible)
             {
-                if (ee.s % 5 == 0)
+                A = AR = B = BR = -1;
+                if (ee.s % 5 != 0 && ee.t %5 != 0)
                 {
-                    int s0 = ee.s;
-                    float aX = nodes[s0 + 2].x - nodes[s0 + 1].x;
-                    float aY = nodes[s0 + 2].y - nodes[s0 + 1].y;
-                    float bX = nodes[s0 + 4].x - nodes[s0 + 1].x;
-                    float bY = nodes[s0 + 4].y - nodes[s0 + 1].y;
-                    float orientation = aX * bY - aY * bX;
-                    int t = ee.t - ee.s;
-                    A = ee.s;
-                    if (orientation > 0)
+                    for (int es = 0; es < edges.Count; es++)
                     {
-                        if (nodes[ee.s].ou)
+                        DEdge ees = edges[es];
+                        // ee.sからたどれるジョイントを見つける
+                        if (ees.visible && ees.s % 5 == 0 && ees.t == ee.s)
                         {
-                            t = (t + 7) % 4;
+                            int s0 = ees.s;
+                            float aX = nodes[s0 + 2].x - nodes[s0 + 1].x;
+                            float aY = nodes[s0 + 2].y - nodes[s0 + 1].y;
+                            float bX = nodes[s0 + 4].x - nodes[s0 + 1].x;
+                            float bY = nodes[s0 + 4].y - nodes[s0 + 1].y;
+                            float orientation = aX * bY - aY * bX;
+                            int t = ees.t - ees.s;
+                            if (orientation > 0)
+                            {
+                                if (nodes[ees.s].ou)
+                                {
+                                    t = (t + 7) % 4;
+                                }
+                                else
+                                {
+                                    t = (t + 6) % 4;
+                                }
+                            }
+                            else
+                            {
+                                if (nodes[ees.s].ou)
+                                {
+                                    t = (5 - t) % 4;
+                                }
+                                else
+                                {
+                                    t = (6 - t) % 4;
+                                }
+                            }
+                            A = ees.s;// ee.sからたどれるジョイント
+                            AR = t;
                         }
-                        else
+                        //　ee.tからたどれるジョイント
+                        if (ees.visible && ees.s % 5 == 0 && ees.t == ee.t)
                         {
-                            t = (t + 6) % 4;
+                            int s0 = ees.s;
+                            float aX = nodes[s0 + 2].x - nodes[s0 + 1].x;
+                            float aY = nodes[s0 + 2].y - nodes[s0 + 1].y;
+                            float bX = nodes[s0 + 4].x - nodes[s0 + 1].x;
+                            float bY = nodes[s0 + 4].y - nodes[s0 + 1].y;
+                            float orientation = aX * bY - aY * bX;
+                            int t = ees.t - ees.s;
+                            if (orientation > 0)
+                            {
+                                if (nodes[ees.s].ou)
+                                {
+                                    t = (t + 7) % 4;
+                                }
+                                else
+                                {
+                                    t = (t + 6) % 4;
+                                }
+                            }
+                            else
+                            {
+                                if (nodes[ees.s].ou)
+                                {
+                                    t = (5 - t) % 4;
+                                }
+                                else
+                                {
+                                    t = (6 - t) % 4;
+                                }
+                            }
+                            B = ees.s;// ee.tからたどれるジョイント
+                            BR = t;
                         }
-                    }
-                    else
+                    }                                                            ////
+                    Edge ed = thisKnot.AddEdge(A, B, AR, BR, e);// iD = e (連番に限らない。)
+                    Bead bdJointA = thisKnot.GetBeadByID(A);
+                    Bead bdAR = thisKnot.GetBeadByID(ee.s);
+                    Bead bdBR = thisKnot.GetBeadByID(ee.t);
+                    Bead bdJointB = thisKnot.GetBeadByID(B);
+                    if (bdJointA == null || bdAR == null || bdBR == null || bdJointB == null)
                     {
-                        if (nodes[ee.s].ou)
-                        {
-                            t = (5 - t) % 4;
-                        }
-                        else
-                        {
-                            t = (6 - t) % 4;
-                        }
+                        continue;
                     }
-                    AR = t;
-                    B = ee.t;
-                    BR = 0;
+                    bdJointA.SetNU12(AR, bdAR);
+                    bdAR.N1 = bdJointA;
+                    bdAR.N2 = bdBR;
+                    bdBR.N1 = bdJointB;
+                    bdBR.N2 = bdAR;
+                    bdJointB.SetNU12(BR, bdBR);
                 }
-                else
-                {
-                    A = ee.s;
-                    AR = 2;
-                    B = ee.t;
-                    BR = 2;
-                }
-                Edge ed = thisKnot.AddEdge(A, B, AR, BR, e);// iD = e (連番に限らない。)
-                ////
-                Bead bdA = thisKnot.GetNodeByID(A).ThisBead;
-                Bead bdB = thisKnot.GetNodeByID(B).ThisBead;
-                if (bdA == null|| bdB == null)
-                {
-                    continue;
-                }
-                BeadLastID++;
-                Bead bd = thisKnot.AddBead((bdA.Position + bdB.Position) * 0.5f, BeadLastID);// IDは別途数える。
-                bd.NumOfNbhd = 2;
-                bd.N1 = bdA;
-                bd.N2 = bdB;
-                bdA.SetNU12(AR, bd);
-                bdB.SetNU12(BR, bd);
-            }
-        }
-        for (int n = 0; n < nodeNumber; n++)// ノードに対応しているビーズのみ扱う
-        { 
-            Bead bd = thisKnot.AllBeads[n];
-            if (bd.N1 != null && bd.N2 != null && bd.U1 == null && bd.U2 == null)
-            {
-                bd.Joint = false;
-                bd.MidJoint = true;
-            }
-            else if (bd.N1 != null && bd.N2 != null && bd.U1 != null && bd.U2 != null)
-             {
-                bd.Joint = true;
-                bd.MidJoint = false;
-                Node nd = thisKnot.AllNodes[n];
-                if (nd.Active)
-                {
-                    nd.Joint = true;
-                    nd.MidJoint = false;
-                }
-            }
-            else 
-            {// これはない前提
-                thisKnot.AllNodes[n].Active = false;
-                bd.Active = false;
             }
         }
         thisKnot.GetAllThings();
 
         thisKnot.Modify();
         // NodeEdgeからBeadsを整える
-                thisKnot.UpdateBeads();
+        thisKnot.UpdateBeads();
         //グラフの形を整える。現状ではR[]を整えるだけ。
-        //        thisKnot.Modify();
+        thisKnot.Modify();
         Display.SetDrawKnotMode();// drawモードの変更
     }
 

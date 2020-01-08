@@ -28,7 +28,7 @@ public class Bead : MonoBehaviour {
         SpriteRenderer SR = GetComponent<SpriteRenderer>();
         if(Joint || MidJoint)
         {
-            gameObject.transform.localScale = new Vector3(0.05f, 0.05f, 1f);
+            gameObject.transform.localScale = new Vector3(0.028f, 0.028f, 1f);
             SR.color = Color.green;
         }
         else
