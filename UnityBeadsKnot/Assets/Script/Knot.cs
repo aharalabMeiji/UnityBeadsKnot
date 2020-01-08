@@ -627,7 +627,7 @@ public class Knot : MonoBehaviour
     /// <summary>
     /// 結び目の向きを適当に決める。
     /// </summary>
-    void MakeOrientation()
+    public void MakeOrientation()
     {
         GetAllThings();
         for(int e=0; e<AllEdges.Length; e++)
