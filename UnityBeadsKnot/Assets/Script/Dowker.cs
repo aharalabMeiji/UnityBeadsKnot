@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -25,8 +26,11 @@ public class Dowker //: MonoBehaviour
 
     public Dowker()
     {
-        thisKnot = MonoBehaviour.FindObjectOfType<Knot>();
-        //dowker = new int[100];
+        thisKnot = MonoBehaviour.FindObjectOfType<Knot>();// Knotが一つであるという前提。
+    }
+
+    public void MakeKnotFromDowkerCode()
+    {
         dowkerCount = 0;
         nodes = new List<DNode>();
         edges = new List<DEdge>();
@@ -80,17 +84,17 @@ public class Dowker //: MonoBehaviour
         FindOuter();
         DowkerModify();
         //この点データでdata_graphを構成する．
-        for(int i=0; i<nodes.Count; i++)
+        for (int i = 0; i < nodes.Count; i++)
         {
             //Debug.Log(nodes[i].ToString());
         }
-        for(int i=0; i<edges.Count; i++)
+        for (int i = 0; i < edges.Count; i++)
         {
             //Debug.Log(edges[i].ToString());
         }
         //Debug.Log("Dowker test");
-        OutputData(); 
-        }
+        OutputData();
+    }
 
     class DNode
     {
@@ -539,11 +543,11 @@ public class Dowker //: MonoBehaviour
     /// <summary>
     /// ドウカー表示を出力する
     /// </summary>
-    void dowker_notation()
+    public void dowker_notation()
     {
         thisKnot.GetAllThings();
         thisKnot.MakeOrientation();
-        int JointNodeID, StartJointNodeID;
+        int NodeID, NodeRID, StartNodeID, StartNodeRID;
         int JointCount = 0;
         for(int i=0; i<thisKnot.AllNodes.Length; i++)
         {
@@ -554,109 +558,97 @@ public class Dowker //: MonoBehaviour
         }
         if (JointCount > 0)
         {
-            Edge NowEdge;
+            Edge ed =thisKnot.AllEdges[0];//とりあえず０番から始める
+            if (ed == null) return;
+            StartNodeID = ed.ANodeID;
+            StartNodeRID = ed.ANodeRID;
+            NodeID = ed.BNodeID;
+            NodeRID = ed.BNodeRID;
             int[] DowkerSet = new int[JointCount * 2];
             bool[] WhetherOver = new bool[JointCount * 2];
-            int StartDir = 0;
-            for(int repeat=0; repeat<JointCount * 2; repeat++)
+            int repeatCount = 0;
+            Node nd = thisKnot.GetNodeByID(NodeID);
+            if (nd==null) return;
+            if (nd.Joint)
             {
-
+                DowkerSet[repeatCount] = NodeID;
+                WhetherOver[repeatCount] = (NodeRID == 0 || NodeRID == 2);
+            }
+            switch (NodeRID)
+            {
+                case 0: NodeRID = 2; break;
+                case 1: NodeRID = 3; break;
+                case 2: NodeRID = 0; break;
+                case 3: NodeRID = 1; break;
+            }
+            repeatCount++;
+            
+            //Debug.Log(NodeID + "," + NodeRID + "->");
+            for (int repeat=0; repeat< thisKnot.AllEdges.Length; repeat++)
+            {
+                bool OK = false;
                 for(int e=0; e<thisKnot.AllEdges.Length; e++)
                 {
-                    Edge ed = thisKnot.AllEdges[e];
-                    //if (JointNodeID = )
+                    ed = thisKnot.AllEdges[e];
+                    //Debug.Log("   "+ed.ANodeID + "," + ed.ANodeRID+"||"+ ed.BNodeID + "," + ed.BNodeRID);
+                    if (ed.ANodeID == NodeID && ed.ANodeRID == NodeRID)
+                    {
+                        NodeID = ed.BNodeID;
+                        NodeRID = ed.BNodeRID;
+                        //Debug.Log(ed.ANodeID + "," + ed.ANodeRID+":"+ed.BNodeID+","+ed.BNodeRID);
+                        nd = thisKnot.GetNodeByID(NodeID);
+                        if (nd == null) return;
+                        OK = true;
+                        if (nd.Joint)
+                        {
+                            DowkerSet[repeatCount] = NodeID;
+                            WhetherOver[repeatCount] = (NodeRID == 0 || NodeRID == 2);
+                        }
+                        switch (NodeRID)
+                        {
+                            case 0: NodeRID = 2; break;
+                            case 1: NodeRID = 3; break;
+                            case 2: NodeRID = 0; break;
+                            case 3: NodeRID = 1; break;
+                        }
+                        repeatCount++;
+                        break;
+                    }
+                }
+                if (NodeID == StartNodeID && NodeRID == StartNodeRID)
+                {
+                    break;
+                }
+                if (!OK)
+                {
+                    return;
                 }
             }
-            //        Bead start = de.getBead(joint_point_ID);
+            if (repeatCount != JointCount * 2)
+            {
+                Debug.Log("This is not a knot but a link.");
+                return;
+            }
+            string ret = "";
+            for (int i=0; i<JointCount; i++)
+            {
+                for(int j=0; j<JointCount; j++)
+                {
+                    if(DowkerSet[2*i] == DowkerSet[2*j+1] && WhetherOver[2*i] != WhetherOver[2 * j + 1])
+                    {
+                        if (WhetherOver[2 * j + 1])
+                        {
+                            ret += ((-2 * j - 2) + " ");
+                        }
+                        else
+                        {
+                            ret += ((2 * j + 2) + " ");
+                        }
+                    }
+                }
+            }
+            Debug.Log(ret);
         }
-        //        int n1 = start.n1;
-        //        int prev = joint_point_ID;
-        //        int pre_prev = joint_point_ID;
-        //        int j = 0;
-        //        Bead node = start;
-        //        dowker_set[0] = joint_point_ID;
-        //        wheather_over[0] = true;
-        //        j++;
-        //        for (int i = 0; i < de.points.size(); i++)
-        //        {
-        //            pre_prev = prev;
-        //            prev = n1;
-        //            if (n1 == start.n2)
-        //            {
-        //                println(i);
-        //                break;
-        //            }
-        //            else
-        //            {
-        //                node = de.getBead(n1);
-        //                if (node == null)
-        //                {
-        //                    println(":failure");
-        //                }
-        //            }
-        //            if (node.Joint)
-        //            {
-        //                //println(n1);
-        //                dowker_set[j] = n1;
-        //                if (node.n1 == pre_prev)
-        //                {
-        //                    n1 = node.n2;
-        //                    wheather_over[j] = true;
-        //                }
-        //                else if (node.n2 == pre_prev)
-        //                {
-        //                    n1 = node.n1;
-        //                    wheather_over[j] = true;
-        //                }
-        //                else if (node.u1 == pre_prev)
-        //                {
-        //                    n1 = node.u2;
-        //                    wheather_over[j] = false;
-        //                }
-        //                else if (node.u2 == pre_prev)
-        //                {
-        //                    n1 = node.u1;
-        //                    wheather_over[j] = false;
-        //                }
-        //                j = j + 1;
-        //            }
-        //            else
-        //            {
-        //                n1 = node.n1;
-        //                if (pre_prev == n1)
-        //                {
-        //                    n1 = node.n2;
-        //                }
-        //            }
-        //        }
-        //        //print("(");
-        //        for (int i = 0; i < count; i++)
-        //        {
-        //            //println("dowker_set["+i+"]=", dowker_set[i]);
-        //            //println("wheather_over["+i+"]", wheather_over[i]);
-
-        //            if (i % 2 == 0)
-        //            {
-        //                int a = dowker_set[i];
-        //                for (int ii = 0; ii < count; ii++)
-        //                {
-        //                    if (ii != i && dowker_set[ii] == a)
-        //                    {
-        //                        if (wheather_over[ii])
-        //                        {
-        //                            print("-" + (ii + 1) + ",");
-        //                            //return;
-        //                        }
-        //                        else
-        //                        {
-        //                            print((ii + 1) + ",");
-        //                            //return;
-        //                        }
-        //                    }
-        //                }
-        //            }
-        //        }
-        //    }
     }
 }
 

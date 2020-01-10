@@ -703,6 +703,7 @@ public class MouseControll : MonoBehaviour {
     void KeyCodeD()
     {
         Dowker dwk = new Dowker();
+        dwk.dowker_notation();
     }
 
     void KeyCodeN()
