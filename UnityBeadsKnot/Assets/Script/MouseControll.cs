@@ -664,6 +664,10 @@ public class MouseControll : MonoBehaviour {
         {
             KeyCodeD();
         }
+        else if (Input.GetKeyDown(KeyCode.E))
+        {
+            KeyCodeE();
+        }
         else if (Input.GetKeyDown(KeyCode.N))
         {
             KeyCodeN();
@@ -703,7 +707,13 @@ public class MouseControll : MonoBehaviour {
     void KeyCodeD()
     {
         Dowker dwk = new Dowker();
-        dwk.dowker_notation();
+        dwk.MakeKnotFromDowkerCode();
+        //dwk.dowker_notation();
+    }
+    void KeyCodeE()
+    {
+        Dowker dwk = new Dowker();
+        dwk.DowkerNotation();
     }
 
     void KeyCodeN()

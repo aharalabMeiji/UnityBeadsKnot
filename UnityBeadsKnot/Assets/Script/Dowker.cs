@@ -543,7 +543,7 @@ public class Dowker //: MonoBehaviour
     /// <summary>
     /// ドウカー表示を出力する
     /// </summary>
-    public void dowker_notation()
+    public void DowkerNotation()
     {
         thisKnot.GetAllThings();
         thisKnot.MakeOrientation();
@@ -573,6 +573,7 @@ public class Dowker //: MonoBehaviour
             {
                 DowkerSet[repeatCount] = NodeID;
                 WhetherOver[repeatCount] = (NodeRID == 0 || NodeRID == 2);
+                repeatCount++;
             }
             switch (NodeRID)
             {
@@ -581,7 +582,6 @@ public class Dowker //: MonoBehaviour
                 case 2: NodeRID = 0; break;
                 case 3: NodeRID = 1; break;
             }
-            repeatCount++;
             
             //Debug.Log(NodeID + "," + NodeRID + "->");
             for (int repeat=0; repeat< thisKnot.AllEdges.Length; repeat++)
@@ -595,14 +595,16 @@ public class Dowker //: MonoBehaviour
                     {
                         NodeID = ed.BNodeID;
                         NodeRID = ed.BNodeRID;
-                        //Debug.Log(ed.ANodeID + "," + ed.ANodeRID+":"+ed.BNodeID+","+ed.BNodeRID);
+                        Debug.Log(ed.ANodeID + "," + ed.ANodeRID+":"+ed.BNodeID+","+ed.BNodeRID);
                         nd = thisKnot.GetNodeByID(NodeID);
                         if (nd == null) return;
                         OK = true;
                         if (nd.Joint)
                         {
+                            Debug.Log(NodeID+","+ repeatCount);
                             DowkerSet[repeatCount] = NodeID;
                             WhetherOver[repeatCount] = (NodeRID == 0 || NodeRID == 2);
+                            repeatCount++;
                         }
                         switch (NodeRID)
                         {
@@ -611,7 +613,6 @@ public class Dowker //: MonoBehaviour
                             case 2: NodeRID = 0; break;
                             case 3: NodeRID = 1; break;
                         }
-                        repeatCount++;
                         break;
                     }
                 }
