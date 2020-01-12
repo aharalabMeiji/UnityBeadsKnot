@@ -55,23 +55,7 @@ public class Knot : MonoBehaviour
         return Bd;
     }
 
-    public Node AddNode(Vector3 pos, int id)
-    {
-        GameObject prefab = Resources.Load<GameObject>("Prefabs/Node");
-        GameObject obj = Node.Instantiate<GameObject>(prefab, Vector3.zero, Quaternion.identity, Nodes.transform);
-        Node nd = obj.GetComponent<Node>();
-        nd.R = new float[4];
-        nd.SetPosition(pos);
-        for (int i = 0; i < 4; i++)
-        {
-            nd.R[i] = 1f;
-        }
-        nd.ID = id;
-        nd.Active = true;
-        return nd;
-    }
-
-    public Edge AddEdge(int idA, int idB, int ridA, int ridB,int edgeId)
+    public Edge AddEdge(int idA, int idB, int ridA, int ridB, int edgeId)
     {
         GameObject prefab = Resources.Load<GameObject>("Prefabs/Edge");
         GameObject obj = Node.Instantiate<GameObject>(prefab, Vector3.zero, Quaternion.identity, Edges.transform);
@@ -88,6 +72,21 @@ public class Knot : MonoBehaviour
         return ed;
     }
 
+    public Node AddNode(Vector3 pos, int id)
+    {
+        GameObject prefab = Resources.Load<GameObject>("Prefabs/Node");
+        GameObject obj = Node.Instantiate<GameObject>(prefab, Vector3.zero, Quaternion.identity, Nodes.transform);
+        Node nd = obj.GetComponent<Node>();
+        nd.R = new float[4];
+        nd.SetPosition(pos);
+        for (int i = 0; i < 4; i++)
+        {
+            nd.R[i] = 1f;
+        }
+        nd.ID = id;
+        nd.Active = true;
+        return nd;
+    }
 
     /// <summary>
     /// 画面からはみ出ないように位置を整える。
@@ -118,14 +117,7 @@ public class Knot : MonoBehaviour
             bd.Position.x += dx;
             bd.Position.y += dy;
         }
-        AllEdges = FindObjectsOfType<Edge>();
-        for (int i = 0; i < AllEdges.Length; i++)
-        {
-            Edge ed = AllEdges[i];
-            ed.AdjustLineRenderer();
-        }
-
-
+        AdjustEdgeLine();
     }
     /// <summary>
     /// ノードを全部クリアする。
@@ -1595,6 +1587,7 @@ public class Knot : MonoBehaviour
                     }
                     // Nowを使用不可にする。
                     Now.Active = false;
+                    Now.N1 = Now.U1 = Now.N2 = Now.U2 = null;
                 }
             }
             else if (Now.N2 == Prev || Now.N2.ID == Prev.ID)
@@ -1632,6 +1625,7 @@ public class Knot : MonoBehaviour
                     }
                     // Nowを使用不可にする。
                     Now.Active = false;
+                    Now.N1 = Now.U1 = Now.N2 = Now.U2 = null;
                 }
             }
             else if (Now.U1 == Prev || (Now.U1 != null && Now.U2 != null && Now.U1.ID == Prev.ID))//IDベースですすめる。
@@ -1651,6 +1645,7 @@ public class Knot : MonoBehaviour
                 {
                     // Nowを使用不可にする。
                     Now.Active = false;
+                    Now.N1 = Now.U1 = Now.N2 = Now.U2 = null;
                 }
             }
             else if (Now.U2 == Prev || (Now.U1 != null && Now.U2 != null && Now.U2.ID == Prev.ID))
@@ -1670,6 +1665,7 @@ public class Knot : MonoBehaviour
                 {
                     // Nowを使用不可にする。
                     Now.Active = false;
+                    Now.N1 = Now.U1 = Now.N2 = Now.U2 = null;
                 }
             }
             else
@@ -1693,6 +1689,8 @@ public class Knot : MonoBehaviour
             }
         }
         // Active==false なbeadを消す？
+        // AllBeadsを更新
+        AllBeads = this.GetComponentsInChildren<Bead>();
     }
 
 
@@ -1756,8 +1754,6 @@ public class Knot : MonoBehaviour
                 bd.N2 = GetBeadByID(ID + 1);
             }
         }
-
-
         {//スタートビーズのデータを整える
             if (startBead.NumOfNbhd == 0)
             {

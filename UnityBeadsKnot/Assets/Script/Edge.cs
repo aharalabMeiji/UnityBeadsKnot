@@ -108,11 +108,18 @@ public class Edge : MonoBehaviour
     {
         LineRenderer LR = gameObject.GetComponent<LineRenderer>();
         //Debug.Log("AdjustLineRenderer()");
-        //Debug.Log(ParentKnot);
         Node ANode = ParentKnot.GetNodeByID(ANodeID);
-        //Node BNode = ParentKnot.GetNodeByID(BNodeID);
-
-        //if (!ANode.Active || !BNode.ActiveW) return;
+        Node BNode = ParentKnot.GetNodeByID(BNodeID);
+        if (ANode == null || BNode == null) 
+        {
+            Debug.LogError("Edge ID " + ID + "(" + ANodeID + "," + ANodeRID + ")(" + BNodeID + "," + BNodeRID + ") has error in NodeID");
+            return;
+        }
+        if (!ANode.Active || !BNode.Active)
+        {
+            Debug.LogError("Edge ID " + ID + "(" + ANodeID + "," + ANodeRID + ")(" + BNodeID + "," + BNodeRID + ") has error in Node activity");
+            return;
+        }
         Bead ABead = ANode.ThisBead;
         //Bead BBead = BNode.ThisBead;
         List<Vector3> Positions = new List<Vector3>();
@@ -123,12 +130,8 @@ public class Edge : MonoBehaviour
         if (Now == null)
         {
             LR.positionCount = 0;// 失敗
-            Debug.LogError("Error in AdjustLineRenderer");
-            Debug.Log("ABead ID = "+ABead.ID+ ", ANodeRID = "+ANodeRID);
-            Debug.Log("ABead.N1 = " + ABead.N1);
-            Debug.Log("ABead.N2 = " + ABead.N2);
-            Debug.Log("ABead.U1 = " + ABead.U1);
-            Debug.Log("ABead.U2 = " + ABead.U2);
+            Debug.LogError("Edge ID " + ID + "(" + ANodeID + "," + ANodeRID + ")(" + BNodeID + "," + BNodeRID + ") has error beads sequence");
+            Debug.Log("ABead ID = "+ABead.ID+ ", ANodeRID = "+ANodeRID+":ABead.N1 = " + ABead.N1+":ABead.N2 = " + ABead.N2+":ABead.U1 = " + ABead.U1+":ABead.U2 = " + ABead.U2);
             return;
         }
         Bead Next;
@@ -138,12 +141,12 @@ public class Edge : MonoBehaviour
         {
             if(Now==null)
             {
-                Debug.LogError("error in AdjustLineRenderer() : prev = " +Prev.ID+":repeat = "+repeat);
+                Debug.LogError("Edge ID " + ID + "(" + ANodeID + "," + ANodeRID + ")(" + BNodeID + "," + BNodeRID + ") error in AdjustLineRenderer() : prev = " + Prev.ID+":repeat = "+repeat);
                 return;
             }
             if (Now.N1 == null)
             {
-                Debug.LogError("error in AdjustLineRenderer() : Now.ID ="+Now.ID );
+                Debug.LogError("Edge ID " + ID + "(" + ANodeID + "," + ANodeRID + ")(" + BNodeID + "," + BNodeRID + ") error in AdjustLineRenderer() : Now.ID =" + Now.ID );
             }
             if (Now.N1 == Prev || Now.N1.ID == Prev.ID)//IDベースですすめる。
             {
