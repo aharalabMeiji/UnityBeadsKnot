@@ -11,6 +11,7 @@ public class Knot : MonoBehaviour
     public Node[] AllNodes;
     public Edge[] AllEdges;
     public bool Oriented=false;
+    public bool UnderError;//エラーが起こったらフラグを立てて、エディットモードへ誘導する。
 
     // Start is called before the first frame update
     void Start()
@@ -28,6 +29,17 @@ public class Knot : MonoBehaviour
         ClearAllNonactiveEdges();
         ClearAllNonactiveNodes();
         ClearAllNonactiveBeads();
+        if (UnderError)
+        {
+            if (ContainsError())
+            {
+                SaveLogFile();
+                Debug.Log("Error will be repaired.");
+                RepairAllThings();
+                //Display.SetEditKnotMode();
+            }
+            UnderError = false;
+        }
     }
 
     public Bead AddBead(Vector3 v)
@@ -189,6 +201,122 @@ public class Knot : MonoBehaviour
         }
     }
 
+    bool ContainsError()
+    {// どこか一つでもエラーがあればtrueを返す。
+        GetAllThings();
+        // ビーズをすべて調べて、接続が０，２，４本のみであればOK
+        AllBeads = GetComponentsInChildren<Bead>();
+        bool BeOK = true;
+        for (int i = 0; i < AllBeads.Length; i++)
+        {
+            Bead bd = AllBeads[i];
+            Bead TmpN1 = bd.N1;
+            Bead TmpN2 = bd.N2;
+            Bead TmpU1 = bd.U1;
+            Bead TmpU2 = bd.U2;
+            //int count = ((TmpN1 != null) ? 1 : 0) + ((TmpN2 != null) ? 1 : 0) + ((TmpU1 != null) ? 1 : 0) + ((TmpU2 != null) ? 1 : 0);
+            try
+            {
+                if (TmpN1 != null && TmpN2 != null && TmpU1 != null && TmpU2 != null && TmpN1.Active && TmpN2.Active && TmpU1.Active && TmpU2.Active)
+                {
+                    bd.NumOfNbhd = 4;
+                    bd.Joint = true;
+                }
+                else if (TmpN1 != null && TmpN2 != null && TmpU1 == null && TmpU2 == null && TmpN1.Active && TmpN2.Active)
+                {
+                    bd.NumOfNbhd = 2;
+                    bd.Joint = false;
+                }
+                else if (TmpN1 == null && TmpN2 != null && TmpU1 == null && TmpU2 == null && TmpN2.Active)
+                {
+                    bd.N1 = TmpN2;
+                    bd.N2 = null;
+                    bd.NumOfNbhd = 1;
+                    bd.Joint = bd.MidJoint = false;
+                    BeOK = false;
+                }
+                else if (TmpN1 != null && TmpN2 == null && TmpU1 == null && TmpU2 == null && TmpN1.Active)
+                {
+                    bd.NumOfNbhd = 1;
+                    bd.Joint = bd.MidJoint = false;
+                    BeOK = false;
+                }
+                else
+                {
+                    bd.N1 = bd.N2 = bd.U1 = bd.U2 = null;
+                    bd.Active = false;
+                    BeOK = false;
+                }
+            }
+            catch (Exception)
+            {
+                bd.N1 = bd.N2 = bd.U1 = bd.U2 = null;
+                bd.Active = false;
+                BeOK = false;
+            }
+        }
+        if (!BeOK)// どこか一つでもエラーがあればtrueを返す。
+        {
+            return true;
+        }
+        // ノードをすべて調べて、対応するビーズがあればOK
+        BeOK = true;
+        for (int i=0; i<AllNodes.Length; i++)
+        {
+            Node nd = AllNodes[i];
+            Bead bd = nd.ThisBead;
+            if( bd != null && bd.Active)
+            {
+                nd.Position = bd.Position;
+                nd.MidJoint = bd.MidJoint;
+                nd.Joint = bd.Joint;
+                nd.Active = bd.Active;
+                if(!nd.Joint && !nd.MidJoint)
+                {
+                    BeOK = false;
+                }
+            }
+            else
+            {
+                nd.Active = false;
+            }
+        }
+        if (!BeOK)// どこか一つでもエラーがあればtrueを返す。
+        {
+            return true;
+        }
+        //　エッジをすべて調べて、対応するビーズ列があればOK
+        BeOK = true;
+        for(int i=0; i<AllEdges.Length; i++)
+        {
+            Edge ed = AllEdges[i];
+            Node ANode = GetNodeByID(ed.ANodeID);
+            Node BNode = GetNodeByID(ed.BNodeID);
+            if(ANode == null || BNode == null || !ANode.Active || BNode.Active)
+            {
+                BeOK = false;
+                continue;
+            }
+            Bead ANodeBead = ANode.ThisBead;
+            Bead BNodeBead = ANode.ThisBead;
+            if(ANodeBead == null || BNodeBead == null)
+            {
+                BeOK = false;
+                continue;
+            }
+            PairInt pi = FindEndOfEdgeOnBead(ANodeBead, ed.ANodeRID, true);
+            if(pi.first != BNodeBead.ID || pi.second != ed.BNodeRID)
+            {
+                BeOK = false;
+                //continue;
+            }
+        }
+        if (!BeOK)// どこか一つでもエラーがあればtrueを返す。
+        {
+            return true;
+        }
+        return false;
+    }
     void CreateFromNodeEdge(double[,] nodes, int[,] edges)
     {
         int nodesSize = nodes.Length / 7;
@@ -495,6 +623,7 @@ public class Knot : MonoBehaviour
             else
             {
                 Debug.LogError("error in GetBeadsNumberOnEdge");
+                UnderError = true;
                 return -1;
             }
             result++;
@@ -1237,6 +1366,14 @@ public class Knot : MonoBehaviour
         //World.Mode = MODE.ADD_POINT;
     }
 
+    /// <summary>
+    /// ビーズ、ノードエッジに不備があるかどうかをチェックする。
+    /// 直せるものは直す。（といっても、たぶん無理。）
+    /// </summary>
+    void RepairAllThings()
+    {
+
+    }
     public void Rotation(float angle)
     {
         if (Mathf.Abs(angle) < 0.1f)
@@ -1477,7 +1614,7 @@ public class Knot : MonoBehaviour
             else
             {
                 Debug.LogError("error in CountBeadsOnEdge : " + Prev.ID+","+Now.ID);
-                SaveLogFile();
+                UnderError = true ;
                 return -1;
             }
             Prev = Now;
