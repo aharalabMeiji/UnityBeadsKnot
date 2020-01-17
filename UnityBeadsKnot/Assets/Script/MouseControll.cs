@@ -36,7 +36,10 @@ public class Display
     {
         return (Mode == 1);
     }
-
+    public static bool IsFreeSizeDrawKnotMode()
+    {
+        return (Mode == 1);
+    }
     public static bool IsFreeLoopMode()
     {
         return (Mode == 2);
@@ -62,6 +65,10 @@ public class Display
     public static void SetEditKnotMode()
     {
         Mode = 3;
+    }
+    public static void SetFreeSizeDrawKnotMode()
+    {
+        Mode = 11;
     }
 }
 
@@ -656,13 +663,13 @@ public class MouseControll : MonoBehaviour {
         {
             KeyCodeDownArrow();
         }
-        else if (Input.GetKeyDown(KeyCode.LeftArrow))
+        else if ((Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)) && Input.GetKeyDown(KeyCode.LeftArrow))
         {
-            KeyCodeLeftArrow();
+            KeyCodeShiftLeftArrow();
         }
-        else if (Input.GetKeyDown(KeyCode.RightArrow))
+        else if ((Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)) && Input.GetKeyDown(KeyCode.RightArrow))
         {
-            KeyCodeRightArrow();
+            KeyCodeShiftRightArrow();
         }
         else if (Input.GetKeyDown(KeyCode.D))
         {
@@ -698,11 +705,11 @@ public class MouseControll : MonoBehaviour {
     {
         thisKnot.Scale(0.909f);
     }
-    void KeyCodeLeftArrow()
+    void KeyCodeShiftLeftArrow()
     {
         thisKnot.Rotation(0.05f);
     }
-    void KeyCodeRightArrow()
+    void KeyCodeShiftRightArrow()
     {
         thisKnot.Rotation(-0.05f);
     }

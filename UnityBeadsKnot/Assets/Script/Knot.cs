@@ -109,31 +109,37 @@ public class Knot : MonoBehaviour
     /// </summary>
     void AdjustDisplay()
     {
-        float l = 0, t = 0, r = 0, b = 0;
-        AllBeads = FindObjectsOfType<Bead>();
-        for (int i = 0; i < AllBeads.Length; i++)
-        {
-            Bead bd = AllBeads[i];
-            if (l > bd.Position.x) l = bd.Position.x;
-            if (r < bd.Position.x) r = bd.Position.x;
-            if (b > bd.Position.y) b = bd.Position.y;
-            if (t < bd.Position.y) t = bd.Position.y;
+        if (Display.IsDrawKnotMode()) { 
+            float l = 0, t = 0, r = 0, b = 0;
+            AllBeads = FindObjectsOfType<Bead>();
+            for (int i = 0; i < AllBeads.Length; i++)
+            {
+                Bead bd = AllBeads[i];
+                if (l > bd.Position.x) l = bd.Position.x;
+                if (r < bd.Position.x) r = bd.Position.x;
+                if (b > bd.Position.y) b = bd.Position.y;
+                if (t < bd.Position.y) t = bd.Position.y;
+            }
+            float dx = 0f, dy = 0f, rate = 1f;
+            if (l + r > 0.1f) dx = -0.05f;
+            else if (l + r < -0.1f) dx = +0.05f;
+            if (b + t > 0.1f) dy = -0.05f;
+            else if (b + t < -0.1f) dy = 0.05f;
+            if (r - l > 9.5f) rate = 0.95f;
+            if (t - b > 9.5f) rate = 0.95f;
+            for (int i = 0; i < AllBeads.Length; i++)
+            {
+                Bead bd = AllBeads[i];
+                bd.Position.x += dx;
+                bd.Position.y += dy;
+            }
+            GlobalRate = rate;
+            AdjustEdgeLine();
         }
-        float dx = 0f, dy = 0f, rate = 1f;
-        if (l + r > 0.1f) dx = -0.05f;
-        else if (l + r < -0.1f) dx = +0.05f;
-        if (b + t > 0.1f) dy = -0.05f;
-        else if (b + t < -0.1f) dy = 0.05f;
-        if (r - l > 9.5f) rate = 0.95f;
-        if (t - b > 9.5f) rate = 0.95f;
-        for (int i = 0; i < AllBeads.Length; i++)
+        else if (Display.IsFreeSizeDrawKnotMode())
         {
-            Bead bd = AllBeads[i];
-            bd.Position.x += dx;
-            bd.Position.y += dy;
+            AdjustEdgeLine();
         }
-        GlobalRate = rate;
-        AdjustEdgeLine();
     }
     /// <summary>
     /// ノードを全部クリアする。
@@ -1504,18 +1510,10 @@ public class Knot : MonoBehaviour
 
     public void Scale(float a)
     {
-        if (Mathf.Abs(a) > 0.9f)
-        {
-            GetAllThings();
-            for (int i=0; i<AllBeads.Length; i++)
+        if (Display.IsFreeSizeDrawKnotMode()) { 
+            if (Mathf.Abs(a) > 0.9f)
             {
-                Bead bd = AllBeads[i];
-                bd.Position = a * bd.Position;
-            }
-            for(int i=0; i<AllNodes.Length; i++)
-            {
-                Node nd = AllNodes[i];
-                nd.Position = a * nd.Position;
+                GlobalRate *= a; 
             }
         }
     }
