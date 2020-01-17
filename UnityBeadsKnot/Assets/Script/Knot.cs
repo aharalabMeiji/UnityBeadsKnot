@@ -25,8 +25,7 @@ public class Knot : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        //AdjustDisplay();
-        AdjustEdgeLine(); 
+        AdjustDisplay();
         ClearAllNonactiveEdges();
         ClearAllNonactiveNodes();
         ClearAllNonactiveBeads();
@@ -123,10 +122,11 @@ public class Knot : MonoBehaviour
         else if (b + t < -0.1f) dy = 0.05f;
         if (r - l > 9.5f) rate = 0.95f;
         if (t - b > 9.5f) rate = 0.95f;
+        AllBeads = FindObjectsOfType<Bead>();
         for (int i = 0; i < AllBeads.Length; i++)
         {
             Bead bd = AllBeads[i];
-            bd.Position *= rate;
+        //    bd.Position *= rate;
             bd.Position.x += dx;
             bd.Position.y += dy;
         }
@@ -854,6 +854,7 @@ public class Knot : MonoBehaviour
 
     public void UpdateBeadsAtNode(Node nd)
     {
+        AllEdges = this.GetComponentsInChildren<Edge>(); 
         for (int e = 0; e < AllEdges.Length; e++)
         {
             Edge ed = AllEdges[e];
@@ -868,6 +869,7 @@ public class Knot : MonoBehaviour
 
     void UpdateBeadsOnEdge(Edge ed)
     {
+        AllBeads = this.GetComponentsInChildren<Bead>();
         float beadsInterval = 0.15f;
         Node ANode = ed.ANode;// うまくいかないようだったらed.ANodeIDから計算する
         Node BNode = ed.BNode;// うまくいかないようだったらed.ANodeIDから計算する
@@ -983,7 +985,7 @@ public class Knot : MonoBehaviour
             }
             pt0 = pt1;
         }
-        //Debug.Log("(" + ed.ANodeID + "->" + ed.BNodeID + ") " + GetNodeByID(0).ThisBead.Position);
+        AllBeads = this.GetComponentsInChildren<Bead>();
     }
 
     public void UpdateNodeTheta(Node nd)

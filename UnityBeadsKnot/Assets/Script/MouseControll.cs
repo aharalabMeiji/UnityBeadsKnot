@@ -429,6 +429,8 @@ public class MouseControll : MonoBehaviour {
                     }
                     // グラフ構造を書き換える
                     // 形を整える
+                    //thisKnot.Modify();
+                    //thisKnot.UpdateBeads();
                 }
             }
         }
