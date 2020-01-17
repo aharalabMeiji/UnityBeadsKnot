@@ -104,7 +104,6 @@ public class MouseControll : MonoBehaviour {
     public static bool ModifyBeads = false;
     public static bool DisplayEdgeLineRenderer = true;
 
-
     // Use this for initialization
     void Start () {
         thisKnot = ThisKnot.GetComponent<Knot>();
@@ -136,6 +135,7 @@ public class MouseControll : MonoBehaviour {
     {
         MouseDownVec = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         MouseDownVec.z = 0f;
+        MouseDownVec /= thisKnot.GlobalRate;
         //Debug.Log(MouseDownVec);
         if (Display.IsDrawKnotMode()) { 
             thisKnot = ThisKnot.GetComponent<Knot>();
@@ -164,16 +164,16 @@ public class MouseControll : MonoBehaviour {
                     FreeLoop.GetComponent<FreeLoop>().AddPoint2FreeCurve(MouseDownVec);
                     PreviousPosition = MouseDownVec;
                     // ノードにスポットをつける
-                    for(int i=0; i<thisKnot.AllNodes.Length; i++)
-                    {
-                        Vector3 Pos = thisKnot.AllNodes[i].Position;
-                        if (thisKnot.AllNodes[i].Active)
-                        {
-                            GameObject prefab = Resources.Load<GameObject>("Prefabs/Spot");
-                            GameObject obj = Instantiate<GameObject>(prefab, new Vector3(Pos.x, Pos.y, 0.1f), Quaternion.identity);
-                            obj.transform.localScale = new Vector3(0.25f, 0.25f, 1f);
-                        }
-                    }
+                    //for(int i=0; i<thisKnot.AllNodes.Length; i++)
+                    //{
+                    //    Vector3 Pos = thisKnot.AllNodes[i].Position;
+                    //    if (thisKnot.AllNodes[i].Active)
+                    //    {
+                    //        GameObject prefab = Resources.Load<GameObject>("Prefabs/Spot");
+                    //        GameObject obj = Instantiate<GameObject>(prefab, new Vector3(Pos.x, Pos.y, 0.1f), Quaternion.identity);
+                    //        obj.transform.localScale = new Vector3(0.25f, 0.25f, 1f);
+                    //    }
+                    //}
                     return;
                 }
             }
@@ -198,6 +198,7 @@ public class MouseControll : MonoBehaviour {
     {
         MouseDragVec = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         MouseDragVec.z = 0f;
+        MouseDragVec /= thisKnot.GlobalRate;
         if (Display.IsDrawKnotMode())//通常モードドラッグ中
         {
             //ノードをドラッグしているとき
@@ -314,6 +315,7 @@ public class MouseControll : MonoBehaviour {
     {
         Vector3 MouseUpVec = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         MouseUpVec.z = 0f;
+        MouseUpVec /= thisKnot.GlobalRate;
         if (Display.IsDrawKnotMode())
         {
             if (DraggedNode != null)
@@ -356,12 +358,12 @@ public class MouseControll : MonoBehaviour {
             else if (StartFreeCurveBead != null)
             {
                 // スポットを消去する
-                Spot[] NodeSpots = FindObjectsOfType<Spot>();
-                for(int i=0; i<NodeSpots.Length; i++)
-                {
-                    Destroy(NodeSpots[i].gameObject);
-                }
-                //終了地点がノードでないことが要件
+                //Spot[] NodeSpots = FindObjectsOfType<Spot>();
+                //for(int i= NodeSpots.Length; i>=0; i--)
+                //{
+                //    Destroy(NodeSpots[i].gameObject);
+                //}
+                ////終了地点がノードでないことが要件
                 bool NoProc = false;
                 //終了地点がノードだったら、非処理フラグを立てる
                 thisKnot.GetAllThings();

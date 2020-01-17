@@ -13,6 +13,8 @@ public class Bead : MonoBehaviour {
 
     public bool Joint = false, MidJoint = false;
 
+    public Knot ParentKnot;
+
     // Use this for initialization
     private void Start()
     {
@@ -23,7 +25,7 @@ public class Bead : MonoBehaviour {
     // Update is called once per frame
     void Update () {
         //GetComponent<Transform>().position = Position;
-        gameObject.transform.position = Position;
+        gameObject.transform.position = Position * ParentKnot.GlobalRate;
 
         SpriteRenderer SR = GetComponent<SpriteRenderer>();
         if(Joint || MidJoint)

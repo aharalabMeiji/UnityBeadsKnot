@@ -12,6 +12,8 @@ public class FreeLoop : MonoBehaviour
     public Vector3 CircleEffectPosition;
     public bool CircleEffectEnable;
 
+    public Knot ParentKnot;
+
     void Start()
     {
         FreeCurve = new List<Vector3>();
@@ -50,7 +52,7 @@ public class FreeLoop : MonoBehaviour
             LR.positionCount = FreeCurve.Count;
             for(int i=0; i < FreeCurve.Count; i++)
             {
-                LR.SetPosition(i, FreeCurve[i]);
+                LR.SetPosition(i, FreeCurve[i] * ParentKnot.GlobalRate);
             }
         }
         else

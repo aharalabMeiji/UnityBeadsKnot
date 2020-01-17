@@ -283,7 +283,8 @@ MonoBehaviour:
   FreeCurve: []
   CircleEffect: {fileID: 789819612}
   CircleEffectPosition: {x: 0, y: 0, z: 0}
-  CircleEffectEnable: 0
+  CircleEffectEnable: 1
+  ParentKnot: {fileID: 788140288}
 --- !u!120 &742438702
 LineRenderer:
   m_ObjectHideFlags: 0
@@ -451,6 +452,8 @@ MonoBehaviour:
   AllNodes: []
   AllEdges: []
   Oriented: 0
+  UnderError: 0
+  GlobalRate: 1
 --- !u!1 &789819612
 GameObject:
   m_ObjectHideFlags: 0

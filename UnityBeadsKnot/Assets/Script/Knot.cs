@@ -13,6 +13,8 @@ public class Knot : MonoBehaviour
     public bool Oriented=false;
     public bool UnderError;//エラーが起こったらフラグを立てて、エディットモードへ誘導する。
 
+    public float GlobalRate=1f;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -51,6 +53,7 @@ public class Knot : MonoBehaviour
         Bd.SetNU12(null, null, null, null);
         Bd.NumOfNbhd = 0;
         Bd.Joint = Bd.MidJoint  = false;
+        Bd.ParentKnot = this;
         return Bd;
     }
 
@@ -64,6 +67,7 @@ public class Knot : MonoBehaviour
         Bd.NumOfNbhd = 0;
         Bd.ID = id;
         Bd.Joint = Bd.MidJoint = false;
+        Bd.ParentKnot = this;
         return Bd;
     }
 
@@ -122,14 +126,13 @@ public class Knot : MonoBehaviour
         else if (b + t < -0.1f) dy = 0.05f;
         if (r - l > 9.5f) rate = 0.95f;
         if (t - b > 9.5f) rate = 0.95f;
-        AllBeads = FindObjectsOfType<Bead>();
         for (int i = 0; i < AllBeads.Length; i++)
         {
             Bead bd = AllBeads[i];
-        //    bd.Position *= rate;
             bd.Position.x += dx;
             bd.Position.y += dy;
         }
+        GlobalRate = rate;
         AdjustEdgeLine();
     }
     /// <summary>
@@ -1865,19 +1868,21 @@ public class Knot : MonoBehaviour
         //FreeLoopをひとつひとつbeadに置き換える(最初と最後は省く)
         FreeLoop freeloop = FreeLoop.GetComponent<FreeLoop>();
         int freeCurveSize = freeloop.FreeCurve.Count;
-        for (int i = 1; i < freeCurveSize-1; i++)
+        int StartID = 2;
+        int LastID = freeCurveSize - 3;
+        for (int i = StartID; i <= LastID; i++)
         {
             //ビーズを追加(freeLoopStartBeadID + i=ID番号)
             AddBead(freeloop.FreeCurve[i], freeLoopStartBeadID + i);
         }
         AllBeads = FindObjectsOfType<Bead>();
-        for (int i = 1; i < freeCurveSize-1; i++)
+        for (int i = StartID; i <= LastID; i++)
         {
             // N1,N2, NumOfNbhdを設定
             int ID = freeLoopStartBeadID + i;
             Bead bd = GetBeadByID(ID);
             //Debug.Log(bd + "," + ID);
-            if (i == 1) 
+            if (i == StartID) 
             { 
                 bd.N1 = startBead;
             }
@@ -1885,7 +1890,7 @@ public class Knot : MonoBehaviour
             {
                 bd.N1 = GetBeadByID(ID - 1);
             }
-            if(i== freeCurveSize - 2)
+            if(i== LastID)
             {
                 bd.N2 = endBead;
             }
@@ -1897,23 +1902,23 @@ public class Knot : MonoBehaviour
         {//スタートビーズのデータを整える
             if (startBead.NumOfNbhd == 0)
             {
-                startBead.N1 = GetBeadByID(freeLoopStartBeadID + 1);
+                startBead.N1 = GetBeadByID(freeLoopStartBeadID + StartID);
                 startBead.NumOfNbhd = 1;
             } else if(startBead.NumOfNbhd == 1)
             {
-                startBead.N2 = GetBeadByID(freeLoopStartBeadID + 1);
+                startBead.N2 = GetBeadByID(freeLoopStartBeadID + StartID);
                 startBead.NumOfNbhd = 2;
             }
         }
         {//エンドビーズのデータを整える
             if (endBead.NumOfNbhd == 0)
             {
-                endBead.N1 = GetBeadByID(freeLoopStartBeadID + freeCurveSize - 2);
+                endBead.N1 = GetBeadByID(freeLoopStartBeadID + LastID);
                 endBead.NumOfNbhd = 1;
             }
             else if (endBead.NumOfNbhd == 1)
             {
-                endBead.N2 = GetBeadByID(freeLoopStartBeadID + freeCurveSize - 2);
+                endBead.N2 = GetBeadByID(freeLoopStartBeadID + LastID);
                 endBead.NumOfNbhd = 2;
             }
         }
@@ -1931,7 +1936,7 @@ public class Knot : MonoBehaviour
             Bead Bd1N2 = Bd1.N2;
             if (Bd1N1 == null || Bd1N2 == null) continue;
             int startB2 = Mathf.Max(freeLoopStartBeadID + 1,b1+1);
-            for (int b2 = startB2; b2 < MaxBeadMax; b2++)
+            for (int b2 = startB2; b2 < MaxBeadMax-1; b2++)
             {
                 Bead Bd2 = GetBeadByID(b2);
                 if (Bd2 == null) continue;

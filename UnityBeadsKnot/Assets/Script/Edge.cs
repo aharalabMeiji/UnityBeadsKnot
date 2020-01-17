@@ -126,7 +126,7 @@ public class Edge : MonoBehaviour
         //Bead BBead = BNode.ThisBead;
         List<Vector3> Positions = new List<Vector3>();
         if (ANodeRID == 0 || ANodeRID == 2)
-            Positions.Add(ABead.Position);
+            Positions.Add(ABead.Position * ParentKnot.GlobalRate);
         Bead Prev = ABead;
         Bead Now = ABead.GetNU12(ANodeRID);
         if (Now == null)
@@ -168,14 +168,14 @@ public class Edge : MonoBehaviour
                 ParentKnot.UnderError = true;
                 break;
             }
-            Positions.Add(Now.Position);
+            Positions.Add(Now.Position * ParentKnot.GlobalRate);
             Prev = Now;
             Now = Next;
             if (Now.Joint || Now.MidJoint)
             {
                 if (BNodeRID == 0 || BNodeRID == 2)
                 {
-                    Positions.Add(Now.Position);
+                    Positions.Add(Now.Position * ParentKnot.GlobalRate);
                 }
                 break;
             }
