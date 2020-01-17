@@ -25,7 +25,8 @@ public class Knot : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        AdjustDisplay();
+        //AdjustDisplay();
+        AdjustEdgeLine(); 
         ClearAllNonactiveEdges();
         ClearAllNonactiveNodes();
         ClearAllNonactiveBeads();
@@ -949,7 +950,7 @@ public class Knot : MonoBehaviour
         float arclen = 0f;
         Vector3 pt0 = v1;
         Vector3 pt1;
-        for (float repeat = 0.01f; repeat < 1.00f; repeat += 0.01f)
+        for (float repeat = 0.01f; repeat < 1f; repeat += 0.01f)
         {
             pt1 = GetBezier(v1, v2, v3, v4, repeat);
             arclen += (pt1 - pt0).magnitude;
