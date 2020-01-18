@@ -274,11 +274,12 @@ public class MouseControll : MonoBehaviour {
                             {//フリーカーブをやめる。
                                 FreeLoop.GetComponent<FreeLoop>().FreeCurve.Clear();
                                 // スポットを消去する
-                                Spot[] NodeSpots = FindObjectsOfType<Spot>();
-                                for (int j = 0; j < NodeSpots.Length; j++)
-                                {
-                                    Destroy(NodeSpots[j].gameObject);
-                                }
+                                //Spot[] NodeSpots = FindObjectsOfType<Spot>();
+                                //for (int j = 0; j < NodeSpots.Length; j++)
+                                //{
+                                //    Destroy(NodeSpots[j].gameObject);
+                                //}
+                                StartFreeCurveBead = null;
                             }
                         }
                     }

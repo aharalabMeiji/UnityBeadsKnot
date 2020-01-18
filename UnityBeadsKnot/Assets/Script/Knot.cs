@@ -1708,6 +1708,14 @@ public class Knot : MonoBehaviour
                     Now.NumOfNbhd = 2;
                     //Jointをやめる
                     Now.Joint = Now.MidJoint = false;
+                    int ndID = this.GetNodeIDFromBeadID(Now.ID);
+                    Debug.LogWarning("Id " + ndID + " will be deleted");
+                    Node nd = GetNodeByID(ndID);
+                    if (nd != null)
+                    {
+                        nd.Joint = nd.MidJoint = false;
+                        nd.Active = false;
+                    }
                 }
                 else
                 {
@@ -1745,7 +1753,19 @@ public class Knot : MonoBehaviour
                     Now.NumOfNbhd = 2;
                     //Jointをやめる
                     Now.Joint = Now.MidJoint = false;
-                    //ノードとエッジの処理は後で行う。ので、ここでは不必要
+                    //ノードとエッジの処理は後で行う。でも一応やっておく。
+                    int ndID = this.GetNodeIDFromBeadID(Now.ID);
+                    Debug.LogWarning("Node ID " + ndID + " will be deleted");
+                    Node nd = GetNodeByID(ndID);
+                    if (nd != null)
+                    {
+                        nd.Joint = nd.MidJoint = false;
+                        nd.Active = false;
+                    }
+                    else
+                    {
+                        Debug.LogError("DeleteBeadsFromTo error : no Node for the bead");
+                    }
                 }
                 else
                 {
@@ -1780,7 +1800,15 @@ public class Knot : MonoBehaviour
                     Now.NumOfNbhd = 2;
                     //Jointをやめる
                     Now.Joint = Now.MidJoint = false;
-                    //ノードとエッジの処理は後で行う。ので、ここでは不必要
+                    //ノードとエッジの処理は後で行う。ので、ここでは不必要、でもやっておく。
+                    int ndID = this.GetNodeIDFromBeadID(Now.ID);
+                    Debug.LogWarning("Node ID " + ndID + " will be deleted");
+                    Node nd = GetNodeByID(ndID);
+                    if (nd != null)
+                    {
+                        nd.Joint = nd.MidJoint = false;
+                        nd.Active = false;
+                    }
                 }
                 else
                 {
@@ -1800,7 +1828,15 @@ public class Knot : MonoBehaviour
                     Now.NumOfNbhd = 2;
                     //Jointをやめる
                     Now.Joint = Now.MidJoint = false;
-                    //ノードとエッジの処理は後で行う。ので、ここでは不必要
+                    //ノードとエッジの処理は後で行う。ので、ここでは不必要、でもやっておく。
+                    int ndID = this.GetNodeIDFromBeadID(Now.ID);
+                    Debug.LogWarning("Node ID " + ndID + " will be deleted");
+                    Node nd = GetNodeByID(ndID);
+                    if (nd != null)
+                    {
+                        nd.Joint = nd.MidJoint = false;
+                        nd.Active = false;
+                    }
                 }
                 else
                 {
@@ -1940,6 +1976,7 @@ public class Knot : MonoBehaviour
                 if (Bd2 == null) continue;
                 Bead Bd2N1 = Bd2.N1;
                 Bead Bd2N2 = Bd2.N2;
+                if (Bd2N1 == null || Bd2N2 == null) continue;
                 //int difference = b2 - b1;
                 if (Bd1N1 != Bd2 && Bd1N2 != Bd2 && Bd2N1 != Bd1 && Bd2N2 != Bd1)
                 {// そもそも異なる場所である保証。
