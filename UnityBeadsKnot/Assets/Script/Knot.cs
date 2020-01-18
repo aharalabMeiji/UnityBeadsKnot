@@ -1417,7 +1417,7 @@ public class Knot : MonoBehaviour
         {
             GetAllThings();
             DateTime dt = DateTime.Now;
-            string FileName = dt.Month + "-" + dt.Day + "-" + dt.Hour + "-" + dt.Minute + ".txt";
+            string FileName = dt.Month + "-" + dt.Day + "-" + dt.Hour + "-" + dt.Minute + "error.knot";
             using (StreamWriter streamWriter = new StreamWriter(FileName, append: true))
             {
                 streamWriter.WriteLine("BeadsKnot,0");
