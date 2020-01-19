@@ -1406,6 +1406,7 @@ public class Knot : MonoBehaviour
                 float y = nd.Position.y;
                 nd.Position.x = Mathf.Cos(angle) * x - Mathf.Sin(angle) * y;
                 nd.Position.y = Mathf.Sin(angle) * x + Mathf.Cos(angle) * y;
+                nd.Theta += angle;
             }
         }
     }

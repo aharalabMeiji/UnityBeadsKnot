@@ -152,7 +152,7 @@ MonoBehaviour:
   ThisKnot: {fileID: 788140286}
   ThisMenu: {fileID: 1918355632}
   StaticTools: {fileID: 1961388348}
-  FreeLoop: {fileID: 742438700}
+  thisFreeLoop: {fileID: 742438701}
 --- !u!4 &122630110
 Transform:
   m_ObjectHideFlags: 0
