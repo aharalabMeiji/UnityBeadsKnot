@@ -464,16 +464,35 @@ public class MouseControll : MonoBehaviour {
                         }
                     }
                     if (meets.Count == 0)
-                    { // 交点の個数が0ならば、新規Beadを全部捨てる。
-                        thisKnot.AllBeads = FindObjectsOfType<Bead>();
-                        for(int i=0; i<thisKnot.AllBeads.Length; i++)
+                    {
+                        // ある程度の長さがありかつ交点の個数が０ならば、トリビアルな成分を追加する。
+                        if (freeCurveSize > 20)
                         {
-                            Bead bd = thisKnot.AllBeads[i];
-                            if (bd.ID > BeadCount)
+                            Bead Bd = thisKnot.GetBeadByID(BeadCount + 1 + 1);
+                            Bd.MidJoint = true;
+                            Bd = thisKnot.GetBeadByID(BeadCount + 1 + Mathf.FloorToInt(freeCurveSize / 3));
+                            Bd.MidJoint = true;
+                            Bd = thisKnot.GetBeadByID(BeadCount + 1 + Mathf.FloorToInt(2 * freeCurveSize / 3));
+                            Bd.MidJoint = true;
+                            // BeadsからNodeEdgeを更新する
+                            thisKnot.CreateNodesEdgesFromBeads();
+                            // 形を整える
+                            thisKnot.GetAllThings();
+                            thisKnot.Modify();
+                            thisKnot.UpdateBeads();
+                        }
+                        else
+                        {// 交点の個数が0ならば、新規Beadを全部捨てる。
+                            thisKnot.AllBeads = FindObjectsOfType<Bead>();
+                            for (int i = 0; i < thisKnot.AllBeads.Length; i++)
                             {
-                                bd.N1 = bd.N2 = null;
-                                bd.NumOfNbhd = 0;
-                                bd.Active = false;
+                                Bead bd = thisKnot.AllBeads[i];
+                                if (bd.ID > BeadCount)
+                                {
+                                    bd.N1 = bd.N2 = null;
+                                    bd.NumOfNbhd = 0;
+                                    bd.Active = false;
+                                }
                             }
                         }
                         //モードを戻しておく
@@ -655,8 +674,26 @@ public class MouseControll : MonoBehaviour {
                     }
                 }
                 if (meets.Count == 0)
-                { // 交点の個数が0ならば、Beadを全部捨てる。
-                    thisKnot.ClearAllBeads();
+                {// ある程度の長さがありかつ交点の個数が０ならば、トリビアルな成分を追加する。
+                    if (freeCurveSize > 20) {
+                        Bead Bd = thisKnot.AllBeads[1];
+                        Bd.MidJoint = true;
+                        Bd = thisKnot.AllBeads[Mathf.FloorToInt(freeCurveSize / 3)];
+                        Bd.MidJoint = true;
+                        Bd = thisKnot.AllBeads[Mathf.FloorToInt(2 * freeCurveSize / 3)];
+                        Bd.MidJoint = true;
+                        // BeadsからNodeEdgeを更新する
+                        thisKnot.CreateNodesEdgesFromBeads();
+                        // 形を整える
+                        thisKnot.GetAllThings();
+                        thisKnot.Modify();
+                        thisKnot.UpdateBeads();
+                    }
+                    else
+                    {
+                        // 全体が短くてかつ交点の個数が0ならば、Beadを全部捨てる。
+                        thisKnot.ClearAllBeads();
+                    }
                     //モードを戻しておく
                     Display.SetDrawKnotMode();
                 }
